@@ -1,0 +1,2041 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>AP Business Tools</title>
+    <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --primary: #FF6B35;
+            --primary-dark: #E85A28;
+            --secondary: #004E89;
+            --bg: #0A0E27;
+            --surface: #1A1F3A;
+            --surface-light: #252B4A;
+            --text: #E8EAF6;
+            --text-dim: #9AA5CE;
+            --success: #00C896;
+            --warning: #FFB627;
+            --danger: #FF4757;
+            --border: #2D3555;
+        }
+
+        body {
+            font-family: 'Work Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding-bottom: calc(70px + env(safe-area-inset-bottom));
+        }
+
+        /* ── Tab Content ─────────────────────────────────── */
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+
+        /* ── Bottom Nav ──────────────────────────────────── */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: calc(60px + env(safe-area-inset-bottom));
+            padding-bottom: env(safe-area-inset-bottom);
+            background: #111633;
+            border-top: 1px solid var(--border);
+            display: flex;
+            z-index: 1000;
+        }
+
+        .nav-btn {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            background: none;
+            border: none;
+            color: var(--text-dim);
+            font-size: 11px;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: color 0.2s;
+            padding: 6px 0;
+            min-height: 60px;
+        }
+
+        .nav-btn .nav-icon {
+            font-size: 22px;
+            line-height: 1;
+        }
+
+        .nav-btn.active {
+            color: var(--primary);
+        }
+
+        /* ── Shared Styles ───────────────────────────────── */
+        .header {
+            padding: 24px 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            letter-spacing: -0.5px;
+        }
+
+        .section, .form-section {
+            background: var(--surface);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            border: 1px solid var(--border);
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group:last-child {
+            margin-bottom: 0;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        input[type="text"],
+        input[type="tel"],
+        input[type="email"],
+        input[type="number"],
+        textarea,
+        select {
+            width: 100%;
+            background: var(--surface-light);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 14px 16px;
+            color: var(--text);
+            font-size: 16px;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: var(--bg);
+        }
+
+        textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .required {
+            color: var(--primary);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* ── Success Message ─────────────────────────────── */
+        .success-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--success);
+            color: white;
+            padding: 32px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 200, 150, 0.5);
+            z-index: 2000;
+            display: none;
+        }
+
+        .success-message.show {
+            display: block;
+            animation: popup 0.3s ease-out;
+        }
+
+        @keyframes popup {
+            from { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
+            to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+
+        /* ════════════════════════════════════════════════════
+           INTAKE TAB STYLES
+           ════════════════════════════════════════════════════ */
+        #tab-intake .header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        }
+
+        #tab-intake .header h1 { font-size: 28px; margin-bottom: 8px; }
+        #tab-intake .header p { opacity: 0.9; font-size: 14px; }
+
+        #tab-intake .container { padding: 20px; max-width: 100%; }
+
+        #tab-intake .checkbox-group {
+            display: grid;
+            gap: 8px;
+        }
+
+        #tab-intake .checkbox-item {
+            background: var(--surface-light);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            user-select: none;
+        }
+
+        #tab-intake .checkbox-item input[type="checkbox"] {
+            width: 24px;
+            height: 24px;
+            accent-color: var(--primary);
+        }
+
+        #tab-intake .checkbox-item.checked {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        #tab-intake .radio-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 8px;
+        }
+
+        #tab-intake .radio-btn {
+            background: var(--surface-light);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 14px 12px;
+            text-align: center;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s;
+            user-select: none;
+        }
+
+        #tab-intake .radio-btn.active {
+            background: var(--secondary);
+            border-color: var(--secondary);
+            color: white;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 18px;
+            background: var(--success);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 12px rgba(0, 200, 150, 0.3);
+        }
+
+        .submit-btn:active {
+            transform: scale(0.98);
+            background: #00B584;
+        }
+
+        /* ════════════════════════════════════════════════════
+           ESTIMATE TAB STYLES
+           ════════════════════════════════════════════════════ */
+        #tab-estimate .header {
+            background: linear-gradient(135deg, var(--secondary), #003D6E);
+            margin: 0;
+            border-radius: 0 0 24px 24px;
+        }
+
+        #tab-estimate .container {
+            max-width: 100%;
+            padding: 16px;
+            padding-bottom: 200px;
+        }
+
+        .toggle-section {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .toggle-btn {
+            flex: 1;
+            padding: 12px;
+            background: var(--surface-light);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            color: var(--text);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .toggle-btn.active {
+            background: var(--secondary);
+            border-color: var(--secondary);
+            color: white;
+        }
+
+        .substrate-item {
+            display: grid;
+            grid-template-columns: 1fr 100px 80px;
+            gap: 8px;
+            align-items: start;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .substrate-item:last-child {
+            border-bottom: none;
+        }
+
+        .substrate-label {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .substrate-name {
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .substrate-unit {
+            font-size: 12px;
+            color: var(--text-dim);
+        }
+
+        .substrate-input {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .substrate-input input,
+        .substrate-input select {
+            padding: 10px 8px;
+            font-size: 14px;
+        }
+
+        .substrate-hours {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--success);
+            text-align: right;
+            padding-top: 10px;
+        }
+
+        .combine-btn {
+            background: var(--warning);
+            color: var(--bg);
+            border: none;
+            border-radius: 8px;
+            padding: 6px 10px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 4px;
+            width: 100%;
+        }
+
+        .combine-btn.active {
+            background: var(--success);
+        }
+
+        .condition-selector {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .condition-btn {
+            padding: 12px 8px;
+            background: var(--surface-light);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            color: var(--text);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .condition-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        #tab-estimate .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        #tab-estimate .checkbox-item {
+            background: var(--surface-light);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 10px 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            user-select: none;
+        }
+
+        #tab-estimate .checkbox-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--primary);
+        }
+
+        #tab-estimate .checkbox-item.checked {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        /* Estimate summary bar - above nav */
+        .est-summary {
+            position: fixed;
+            bottom: calc(60px + env(safe-area-inset-bottom));
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, var(--bg) 90%, transparent);
+            padding: 16px;
+            z-index: 500;
+            display: none;
+        }
+
+        .est-summary.visible {
+            display: block;
+        }
+
+        .est-summary-card {
+            background: var(--secondary);
+            border-radius: 20px;
+            padding: 16px;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .est-summary-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .est-summary-row:last-child {
+            margin-bottom: 0;
+            padding-top: 8px;
+            border-top: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .est-summary-label {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .est-summary-value {
+            font-size: 16px;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .est-summary-value.highlight {
+            font-size: 22px;
+            color: var(--success);
+        }
+
+        .save-btn {
+            width: 100%;
+            padding: 14px;
+            background: var(--success);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 12px;
+            transition: all 0.2s;
+        }
+
+        .save-btn:active {
+            transform: scale(0.98);
+        }
+
+        /* ════════════════════════════════════════════════════
+           PIPELINE + ACTIVE TAB STYLES
+           ════════════════════════════════════════════════════ */
+        #tab-pipeline .header,
+        #tab-active .header {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+        }
+
+        .header-stats {
+            display: flex;
+            gap: 16px;
+            margin-top: 12px;
+        }
+
+        .stat {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 8px 14px;
+            text-align: center;
+            flex: 1;
+        }
+
+        .stat-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .filters {
+            display: flex;
+            gap: 8px;
+            padding: 12px 16px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            background: var(--surface);
+            border: 2px solid var(--border);
+            border-radius: 20px;
+            color: var(--text-dim);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+
+        .filter-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        .job-card {
+            background: var(--surface);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 12px;
+            border: 1px solid var(--border);
+            transition: all 0.2s;
+        }
+
+        .job-card:active {
+            transform: scale(0.99);
+        }
+
+        .job-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+        }
+
+        .job-name {
+            font-size: 17px;
+            font-weight: 700;
+        }
+
+        .job-status {
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            white-space: nowrap;
+        }
+
+        .status-new-lead { background: #004E89; color: white; }
+        .status-estimate-sent { background: #FFB627; color: #0A0E27; }
+        .status-scheduled { background: #00C896; color: white; }
+        .status-in-progress { background: #FF6B35; color: white; }
+        .status-completed { background: #2D3555; color: #9AA5CE; }
+        .status-cancelled { background: #FF4757; color: white; }
+
+        .job-address {
+            font-size: 14px;
+            color: var(--text-dim);
+            margin-bottom: 8px;
+        }
+
+        .job-details {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .job-detail { font-size: 13px; }
+        .job-detail-label { color: var(--text-dim); }
+        .job-detail-value {
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--success);
+        }
+
+        .job-phone {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .job-type-tag {
+            display: inline-block;
+            background: var(--surface-light);
+            border-radius: 6px;
+            padding: 2px 8px;
+            font-size: 12px;
+            color: var(--text-dim);
+            margin-top: 6px;
+        }
+
+        .job-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border);
+        }
+
+        .job-action-btn {
+            flex: 1;
+            padding: 8px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            background: var(--surface-light);
+            color: var(--text);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .job-action-btn:active {
+            transform: scale(0.97);
+        }
+
+        .job-action-btn.call {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .status-select {
+            background: var(--surface-light);
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            padding: 6px 8px;
+            color: var(--text);
+            font-size: 12px;
+            font-family: inherit;
+            cursor: pointer;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-dim);
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 12px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-dim);
+        }
+
+        .empty-state h3 {
+            font-size: 18px;
+            margin-bottom: 8px;
+            color: var(--text);
+        }
+
+        .pipe-container, .active-container {
+            padding: 0 16px 16px;
+        }
+
+        .error-banner {
+            background: var(--danger);
+            color: white;
+            padding: 12px 16px;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 600;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════════════════════════
+     TAB 1: INTAKE (Customer Inquiry)
+     ════════════════════════════════════════════════════════════════════════ -->
+<div id="tab-intake" class="tab-content active">
+    <div class="header">
+        <h1>New Customer</h1>
+        <p>Quick inquiry form for phone calls</p>
+    </div>
+
+    <div class="container">
+        <form id="inq-form">
+            <div class="form-section">
+                <div class="input-group">
+                    <label>Customer Name <span class="required">*</span></label>
+                    <input type="text" id="inq-customerName" required placeholder="John Smith">
+                </div>
+                <div class="input-group">
+                    <label>Phone Number <span class="required">*</span></label>
+                    <input type="tel" id="inq-phone" required placeholder="(555) 123-4567">
+                </div>
+                <div class="input-group">
+                    <label>Email</label>
+                    <input type="email" id="inq-email" placeholder="john@email.com">
+                </div>
+                <div class="input-group">
+                    <label>Property Address <span class="required">*</span></label>
+                    <input type="text" id="inq-address" required placeholder="123 Main St, Denver, CO">
+                </div>
+            </div>
+
+            <div class="form-section">
+                <label style="margin-bottom: 12px;">Job Type (select all that apply) <span class="required">*</span></label>
+                <div class="checkbox-group">
+                    <div class="checkbox-item" onclick="inqToggleCheckbox(this, 'inq-interior')">
+                        <input type="checkbox" id="inq-interior" value="Interior Painting">
+                        <span>Interior Painting</span>
+                    </div>
+                    <div class="checkbox-item" onclick="inqToggleCheckbox(this, 'inq-exterior')">
+                        <input type="checkbox" id="inq-exterior" value="Exterior Painting">
+                        <span>Exterior Painting</span>
+                    </div>
+                    <div class="checkbox-item" onclick="inqToggleCheckbox(this, 'inq-decks')">
+                        <input type="checkbox" id="inq-decks" value="Deck Staining">
+                        <span>Deck Staining/Painting</span>
+                    </div>
+                    <div class="checkbox-item" onclick="inqToggleCheckbox(this, 'inq-cabinets')">
+                        <input type="checkbox" id="inq-cabinets" value="Cabinet Painting">
+                        <span>Cabinet Painting</span>
+                    </div>
+                    <div class="checkbox-item" onclick="inqToggleCheckbox(this, 'inq-windows')">
+                        <input type="checkbox" id="inq-windows" value="Windows/Doors">
+                        <span>Windows/Doors</span>
+                    </div>
+                    <div class="checkbox-item" onclick="inqToggleCheckbox(this, 'inq-touchup')">
+                        <input type="checkbox" id="inq-touchup" value="Touch-up/Small Job">
+                        <span>Touch-up/Small Job</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <div class="input-group">
+                    <label>Preferred Timeline</label>
+                    <input type="text" id="inq-timeline" placeholder="e.g., 'March 2026' or 'ASAP' or 'Summer'">
+                </div>
+                <div class="input-group">
+                    <label>When was it last painted?</label>
+                    <input type="text" id="inq-lastPainted" placeholder="e.g., '5 years ago' or 'Never' or 'Unknown'">
+                </div>
+            </div>
+
+            <div class="form-section">
+                <label style="margin-bottom: 12px;">Have we worked for you before? <span class="required">*</span></label>
+                <div class="radio-group">
+                    <div class="radio-btn" onclick="inqSelectRadio(this, 'inq-previous', 'Yes')">Yes</div>
+                    <div class="radio-btn active" onclick="inqSelectRadio(this, 'inq-previous', 'No')">No</div>
+                    <div class="radio-btn" onclick="inqSelectRadio(this, 'inq-previous', 'Not sure')">Not sure</div>
+                </div>
+                <input type="hidden" id="inq-previous" value="No">
+            </div>
+
+            <div class="form-section">
+                <div class="input-group">
+                    <label>Additional Notes</label>
+                    <textarea id="inq-notes" placeholder="Any special requests, concerns, or details..."></textarea>
+                </div>
+            </div>
+
+            <button type="submit" class="submit-btn" id="inq-submitBtn">Save Inquiry</button>
+        </form>
+    </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════════════
+     TAB 2: ESTIMATE (Calculator Pro)
+     ════════════════════════════════════════════════════════════════════════ -->
+<div id="tab-estimate" class="tab-content">
+    <div class="header">
+        <h1>Estimate Calculator</h1>
+        <p style="opacity: 0.9; font-size: 14px;">Professional estimate tool</p>
+    </div>
+
+    <div class="container">
+        <!-- Job Info -->
+        <div class="section">
+            <div class="input-group">
+                <label>Job Address</label>
+                <input type="text" id="est-jobAddress" placeholder="123 Main St">
+            </div>
+            <div class="input-group" style="margin-top: 12px;">
+                <label>Customer Name</label>
+                <input type="text" id="est-customerName" placeholder="John Smith">
+            </div>
+            <div class="input-group" style="margin-top: 12px;">
+                <label>Estimator</label>
+                <select id="est-estimator">
+                    <option value="CM">CM</option>
+                    <option value="LJ">LJ</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Job Type Toggle -->
+        <div class="toggle-section">
+            <button class="toggle-btn active" onclick="estToggleJobType('interior')">Interior</button>
+            <button class="toggle-btn" onclick="estToggleJobType('exterior')">Exterior</button>
+        </div>
+
+        <!-- INTERIOR SECTION -->
+        <div id="est-interiorSection">
+            <div class="section">
+                <div class="section-title">Interior Substrates</div>
+
+                <div class="substrate-item">
+                    <div class="substrate-label"><span class="substrate-name">Walls</span><span class="substrate-unit">sq ft</span></div>
+                    <div class="substrate-input">
+                        <input type="number" id="est-intWalls" placeholder="0" onchange="estCalculate()">
+                        <select id="est-intWallsRate" onchange="estCalculate()">
+                            <option value="13">$13/sf Standard</option>
+                            <option value="14">$14/sf High Ceiling</option>
+                            <option value="15">$15/sf Difficult</option>
+                        </select>
+                    </div>
+                    <div class="substrate-hours" id="est-intWallsHours">0h</div>
+                </div>
+
+                <div class="substrate-item">
+                    <div class="substrate-label"><span class="substrate-name">Ceilings</span><span class="substrate-unit">sq ft</span></div>
+                    <div class="substrate-input">
+                        <input type="number" id="est-intCeilings" placeholder="0" onchange="estCalculate()">
+                        <select id="est-intCeilingsRate" onchange="estCalculate()">
+                            <option value="2">$2/sf Standard</option>
+                            <option value="3">$3/sf Vaulted</option>
+                            <option value="4">$4/sf Wood</option>
+                        </select>
+                    </div>
+                    <div class="substrate-hours" id="est-intCeilingsHours">0h</div>
+                </div>
+
+                <div class="substrate-item">
+                    <div class="substrate-label"><span class="substrate-name">Baseboard</span><span class="substrate-unit">per 10 linear ft</span></div>
+                    <div class="substrate-input">
+                        <input type="number" id="est-intBaseboard" placeholder="0" onchange="estCalculate()">
+                        <select id="est-intBaseboardRate" onchange="estCalculate()">
+                            <option value="1">1hr Standard</option>
+                            <option value="1.5">1.5hr Difficult</option>
+                        </select>
+                    </div>
+                    <div class="substrate-hours" id="est-intBaseboardHours">0h</div>
+                </div>
+
+                <div class="substrate-item">
+                    <div class="substrate-label"><span class="substrate-name">Casement/Trim</span><span class="substrate-unit">per 10 linear ft</span></div>
+                    <div class="substrate-input">
+                        <input type="number" id="est-intCasement" placeholder="0" onchange="estCalculate()">
+                        <select id="est-intCasementRate" onchange="estCalculate()">
+                            <option value="1">1hr Standard</option>
+                            <option value="1.5">1.5hr Difficult</option>
+                        </select>
+                    </div>
+                    <div class="substrate-hours" id="est-intCasementHours">0h</div>
+                </div>
+
+                <div class="substrate-item">
+                    <div class="substrate-label"><span class="substrate-name">Windows</span><span class="substrate-unit">count</span></div>
+                    <div class="substrate-input">
+                        <input type="number" id="est-intWindows" placeholder="0" onchange="estCalculate()">
+                    </div>
+                    <div class="substrate-hours" id="est-intWindowsHours">0h</div>
+                </div>
+
+                <div class="substrate-item">
+                    <div class="substrate-label"><span class="substrate-name">Doors</span><span class="substrate-unit">count</span></div>
+                    <div class="substrate-input">
+                        <input type="number" id="est-intDoors" placeholder="0" onchange="estCalculate()">
+                        <select id="est-intDoorsRate" onchange="estCalculate()">
+                            <option value="6">6hr New</option>
+                            <option value="8">8hr Hung</option>
+                        </select>
+                    </div>
+                    <div class="substrate-hours" id="est-intDoorsHours">0h</div>
+                </div>
+
+                <div class="substrate-item">
+                    <div class="substrate-label"><span class="substrate-name">Cabinets</span><span class="substrate-unit">panels</span></div>
+                    <div class="substrate-input">
+                        <input type="number" id="est-intCabinets" placeholder="0" onchange="estCalculate()">
+                    </div>
+                    <div class="substrate-hours" id="est-intCabinetsHours">0h</div>
+                </div>
+
+                <div class="substrate-item">
+                    <div class="substrate-label"><span class="substrate-name">Closets</span><span class="substrate-unit">sq ft</span></div>
+                    <div class="substrate-input">
+                        <input type="number" id="est-intClosets" placeholder="0" onchange="estCalculate()">
+                    </div>
+                    <div class="substrate-hours" id="est-intClosetsHours">0h</div>
+                </div>
+
+                <div class="substrate-item">
+                    <div class="substrate-label"><span class="substrate-name">Built-ins</span><span class="substrate-unit">panels</span></div>
+                    <div class="substrate-input">
+                        <input type="number" id="est-intBuiltins" placeholder="0" onchange="estCalculate()">
+                    </div>
+                    <div class="substrate-hours" id="est-intBuiltinsHours">0h</div>
+                </div>
+
+                <div class="substrate-item">
+                    <div class="substrate-label"><span class="substrate-name">Woodwork</span><span class="substrate-unit">custom hours</span></div>
+                    <div class="substrate-input">
+                        <input type="number" id="est-intWoodwork" placeholder="0" onchange="estCalculate()">
+                    </div>
+                    <div class="substrate-hours" id="est-intWoodworkHours">0h</div>
+                </div>
+
+                <div class="substrate-item">
+                    <div class="substrate-label"><span class="substrate-name">Posts/Beams</span><span class="substrate-unit">count</span></div>
+                    <div class="substrate-input">
+                        <input type="number" id="est-intPosts" placeholder="0" onchange="estCalculate()">
+                        <select id="est-intPostsRate" onchange="estCalculate()">
+                            <option value="1">1hr Small</option>
+                            <option value="2">2hr Large</option>
+                        </select>
+                    </div>
+                    <div class="substrate-hours" id="est-intPostsHours">0h</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- EXTERIOR SECTION -->
+        <div id="est-exteriorSection" class="hidden">
+            <div class="section">
+                <div class="section-title">Exterior Substrates</div>
+
+                <div class="substrate-item">
+                    <div class="substrate-label"><span class="substrate-name">Siding</span><span class="substrate-unit">sq ft</span></div>
+                    <div class="substrate-input"><input type="number" id="est-extSiding" placeholder="0" onchange="estCalculate()"></div>
+                    <div class="substrate-hours" id="est-extSidingHours">0h</div>
+                </div>
+
+                <div class="substrate-item">
+                    <div class="substrate-label"><span class="substrate-name">Trim</span><span class="substrate-unit">count</span></div>
+                    <div class="substrate-input">
+                        <input type="number" id="est-extTrim" placeholder="0" onchange="estCalculate()">
+                        <select id="est-extTrimRate" onchange="estCalculate()">
+                            <option value="1">Window 1hr</option>
+                            <option value="1.33">Door 80min</option>
+                        </select>
+                    </div>
+                    <div class="substrate-hours" id="est-extTrimHours">0h</div>
+                </div>
+
+                <div class="substrate-item">
+                    <div class="substrate-label"><span class="substrate-name">Corner Boards</span><span class="substrate-unit">linear ft</span></div>
+                    <div class="substrate-input"><input type="number" id="est-extCorner" placeholder="0" onchange="estCalculate()"></div>
+                    <div class="substrate-hours" id="est-extCornerHours">0h</div>
+                </div>
+
+                <div class="substrate-item">
+                    <div class="substrate-label"><span class="substrate-name">Belly Boards</span><span class="substrate-unit">linear ft</span></div>
+                    <div class="substrate-input"><input type="number" id="est-extBelly" placeholder="0" onchange="estCalculate()"></div>
+                    <div class="substrate-hours" id="est-extBellyHours">0h</div>
+                </div>
+
+                <div class="substrate-item">
+                    <div class="substrate-label"><span class="substrate-name">Windows</span><span class="substrate-unit">count</span></div>
+                    <div class="substrate-input"><input type="number" id="est-extWindows" placeholder="0" onchange="estCalculate()"></div>
+                    <div class="substrate-hours" id="est-extWindowsHours">0h</div>
+                </div>
+
+                <div class="substrate-item">
+                    <div class="substrate-label"><span class="substrate-name">Doors</span><span class="substrate-unit">count</span></div>
+                    <div class="substrate-input"><input type="number" id="est-extDoors" placeholder="0" onchange="estCalculate()"></div>
+                    <div class="substrate-hours" id="est-extDoorsHours">0h</div>
+                </div>
+
+                <div class="substrate-item">
+                    <div class="substrate-label"><span class="substrate-name">Fascia</span><span class="substrate-unit">per 10 linear ft</span></div>
+                    <div class="substrate-input">
+                        <input type="number" id="est-extFascia" placeholder="0" onchange="estCalculate()">
+                        <select id="est-extFasciaRate" onchange="estCalculate()">
+                            <option value="1">1hr Standard</option>
+                            <option value="2">2hr Large</option>
+                            <option value="3">3hr Difficult</option>
+                        </select>
+                    </div>
+                    <div class="substrate-hours" id="est-extFasciaHours">0h</div>
+                </div>
+
+                <div class="substrate-item">
+                    <div class="substrate-label"><span class="substrate-name">Soffit</span><span class="substrate-unit">per 10 linear ft</span></div>
+                    <div class="substrate-input">
+                        <input type="number" id="est-extSoffit" placeholder="0" onchange="estCalculate()">
+                        <select id="est-extSoffitRate" onchange="estCalculate()">
+                            <option value="1">1hr Small</option>
+                            <option value="2">2hr Medium</option>
+                            <option value="3">3hr Large</option>
+                            <option value="4">4hr Difficult</option>
+                        </select>
+                        <button class="combine-btn" id="est-combineSoffit" onclick="estToggleCombine()">Combine w/ Fascia</button>
+                    </div>
+                    <div class="substrate-hours" id="est-extSoffitHours">0h</div>
+                </div>
+
+                <div class="substrate-item">
+                    <div class="substrate-label"><span class="substrate-name">Posts/Beams</span><span class="substrate-unit">count</span></div>
+                    <div class="substrate-input">
+                        <input type="number" id="est-extPosts" placeholder="0" onchange="estCalculate()">
+                        <select id="est-extPostsRate" onchange="estCalculate()">
+                            <option value="1">1hr Small</option>
+                            <option value="2">2hr Large</option>
+                        </select>
+                    </div>
+                    <div class="substrate-hours" id="est-extPostsHours">0h</div>
+                </div>
+
+                <div class="substrate-item">
+                    <div class="substrate-label"><span class="substrate-name">Logs</span><span class="substrate-unit">sq ft</span></div>
+                    <div class="substrate-input">
+                        <input type="number" id="est-extLogs" placeholder="0" onchange="estCalculate()">
+                        <select id="est-extLogsRate" onchange="estCalculate()">
+                            <option value="40">40sf/hr w/ chinking</option>
+                            <option value="60">60sf/hr w/o chinking</option>
+                        </select>
+                    </div>
+                    <div class="substrate-hours" id="est-extLogsHours">0h</div>
+                </div>
+
+                <div class="substrate-item">
+                    <div class="substrate-label"><span class="substrate-name">Metal</span><span class="substrate-unit">custom hours</span></div>
+                    <div class="substrate-input"><input type="number" id="est-extMetal" placeholder="0" onchange="estCalculate()"></div>
+                    <div class="substrate-hours" id="est-extMetalHours">0h</div>
+                </div>
+
+                <div class="substrate-item">
+                    <div class="substrate-label"><span class="substrate-name">Garage Doors</span><span class="substrate-unit">count</span></div>
+                    <div class="substrate-input"><input type="number" id="est-extGarage" placeholder="0" onchange="estCalculate()"></div>
+                    <div class="substrate-hours" id="est-extGarageHours">0h</div>
+                </div>
+
+                <div class="substrate-item">
+                    <div class="substrate-label"><span class="substrate-name">Furniture</span><span class="substrate-unit">pieces</span></div>
+                    <div class="substrate-input">
+                        <input type="number" id="est-extFurniture" placeholder="0" onchange="estCalculate()">
+                        <select id="est-extFurnitureRate" onchange="estCalculate()">
+                            <option value="1">1hr Standard</option>
+                            <option value="2">2hr Difficult</option>
+                        </select>
+                    </div>
+                    <div class="substrate-hours" id="est-extFurnitureHours">0h</div>
+                </div>
+
+                <div class="substrate-item">
+                    <div class="substrate-label"><span class="substrate-name">Deck Surface</span><span class="substrate-unit">sq ft</span></div>
+                    <div class="substrate-input"><input type="number" id="est-extDeck" placeholder="0" onchange="estCalculate()"></div>
+                    <div class="substrate-hours" id="est-extDeckHours">0h</div>
+                </div>
+
+                <div class="substrate-item">
+                    <div class="substrate-label"><span class="substrate-name">Stairs</span><span class="substrate-unit">count</span></div>
+                    <div class="substrate-input"><input type="number" id="est-extStairs" placeholder="0" onchange="estCalculate()"></div>
+                    <div class="substrate-hours" id="est-extStairsHours">0h</div>
+                </div>
+
+                <div class="substrate-item">
+                    <div class="substrate-label"><span class="substrate-name">Railings</span><span class="substrate-unit">per 10 linear ft</span></div>
+                    <div class="substrate-input">
+                        <input type="number" id="est-extRailings" placeholder="0" onchange="estCalculate()">
+                        <select id="est-extRailingsRate" onchange="estCalculate()">
+                            <option value="1">1hr Small</option>
+                            <option value="2">2hr Medium</option>
+                            <option value="3">3hr Large</option>
+                            <option value="4">4hr Difficult</option>
+                        </select>
+                    </div>
+                    <div class="substrate-hours" id="est-extRailingsHours">0h</div>
+                </div>
+
+                <div class="substrate-item">
+                    <div class="substrate-label"><span class="substrate-name">Joists</span><span class="substrate-unit">count</span></div>
+                    <div class="substrate-input">
+                        <input type="number" id="est-extJoists" placeholder="0" onchange="estCalculate()">
+                        <select id="est-extJoistsRate" onchange="estCalculate()">
+                            <option value="1">1hr Stain/Clear</option>
+                            <option value="2">2hr Painted</option>
+                        </select>
+                    </div>
+                    <div class="substrate-hours" id="est-extJoistsHours">0h</div>
+                </div>
+
+                <div class="substrate-item">
+                    <div class="substrate-label"><span class="substrate-name">Rafter Tails</span><span class="substrate-unit">count</span></div>
+                    <div class="substrate-input"><input type="number" id="est-extRafters" placeholder="0" onchange="estCalculate()"></div>
+                    <div class="substrate-hours" id="est-extRaftersHours">0h</div>
+                </div>
+
+                <div class="substrate-item">
+                    <div class="substrate-label"><span class="substrate-name">Fence</span><span class="substrate-unit">custom hours</span></div>
+                    <div class="substrate-input"><input type="number" id="est-extFence" placeholder="0" onchange="estCalculate()"></div>
+                    <div class="substrate-hours" id="est-extFenceHours">0h</div>
+                </div>
+
+                <div class="substrate-item">
+                    <div class="substrate-label"><span class="substrate-name">Chinking</span><span class="substrate-unit">linear ft</span></div>
+                    <div class="substrate-input"><input type="number" id="est-extChinking" placeholder="0" onchange="estCalculate()"></div>
+                    <div class="substrate-hours" id="est-extChinkingHours">0h</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CONDITIONS -->
+        <div class="section">
+            <div class="section-title">Job Conditions</div>
+
+            <label style="display: block; margin-bottom: 8px; font-size: 14px; font-weight: 600;">Prep Condition</label>
+            <div class="condition-selector">
+                <button class="condition-btn active" onclick="estSetCondition(this, 'prep', 1)">1<br><span style="font-size: 11px;">Good</span></button>
+                <button class="condition-btn" onclick="estSetCondition(this, 'prep', 2)">2<br><span style="font-size: 11px;">Moderate</span></button>
+                <button class="condition-btn" onclick="estSetCondition(this, 'prep', 3)">3<br><span style="font-size: 11px;">Heavy</span></button>
+                <button class="condition-btn" onclick="estSetCondition(this, 'prep', 4)">4<br><span style="font-size: 11px;">Major</span></button>
+            </div>
+
+            <label style="display: block; margin: 16px 0 8px 0; font-size: 14px; font-weight: 600;">Furniture Level</label>
+            <div class="condition-selector">
+                <button class="condition-btn active" onclick="estSetCondition(this, 'furniture', 1)">1<br><span style="font-size: 11px;">Light</span></button>
+                <button class="condition-btn" onclick="estSetCondition(this, 'furniture', 2)">2<br><span style="font-size: 11px;">Normal</span></button>
+                <button class="condition-btn" onclick="estSetCondition(this, 'furniture', 3)">3<br><span style="font-size: 11px;">Lot</span></button>
+                <button class="condition-btn" onclick="estSetCondition(this, 'furniture', 4)">4<br><span style="font-size: 11px;">Tight</span></button>
+            </div>
+
+            <label style="display: block; margin: 16px 0 8px 0; font-size: 14px; font-weight: 600;">Ladder Requirements</label>
+            <div class="condition-selector">
+                <button class="condition-btn active" onclick="estSetCondition(this, 'ladder', 1)">1<br><span style="font-size: 11px;">8ft</span></button>
+                <button class="condition-btn" onclick="estSetCondition(this, 'ladder', 2)">2<br><span style="font-size: 11px;">20ft</span></button>
+                <button class="condition-btn" onclick="estSetCondition(this, 'ladder', 3)">3<br><span style="font-size: 11px;">32ft</span></button>
+                <button class="condition-btn" onclick="estSetCondition(this, 'ladder', 4)">4<br><span style="font-size: 11px;">40ft</span></button>
+            </div>
+            <div class="condition-selector" style="margin-top: 8px;">
+                <button class="condition-btn" onclick="estSetCondition(this, 'ladder', 'lift')" style="grid-column: span 2;">LIFT<br><span style="font-size: 11px;">Lift Required</span></button>
+            </div>
+        </div>
+
+        <!-- MATERIALS & TOOLS -->
+        <div class="section">
+            <div class="section-title">Materials & Equipment</div>
+
+            <div class="input-group">
+                <label>Colors / Sheens / Products</label>
+                <textarea id="est-colors" placeholder="e.g., BM Simply White (Eggshell) walls, BM Advance (Semi-Gloss) trim"></textarea>
+            </div>
+
+            <label style="display: block; margin: 16px 0 8px 0; font-size: 14px; font-weight: 600;">Required Equipment</label>
+            <div class="checkbox-group">
+                <div class="checkbox-item" onclick="estToggleCheckbox(this, 'est-toolWasher')">
+                    <input type="checkbox" id="est-toolWasher" value="Power Washer">
+                    <span>Power Washer</span>
+                </div>
+                <div class="checkbox-item" onclick="estToggleCheckbox(this, 'est-toolSprayer')">
+                    <input type="checkbox" id="est-toolSprayer" value="Sprayer">
+                    <span>Sprayer</span>
+                </div>
+                <div class="checkbox-item" onclick="estToggleCheckbox(this, 'est-toolScaffold')">
+                    <input type="checkbox" id="est-toolScaffold" value="Scaffolding">
+                    <span>Scaffolding</span>
+                </div>
+                <div class="checkbox-item" onclick="estToggleCheckbox(this, 'est-toolLift')">
+                    <input type="checkbox" id="est-toolLift" value="Lift">
+                    <span>Lift</span>
+                </div>
+                <div class="checkbox-item" onclick="estToggleCheckbox(this, 'est-toolHVLP')">
+                    <input type="checkbox" id="est-toolHVLP" value="HVLP">
+                    <span>HVLP</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- NOTES -->
+        <div class="section">
+            <div class="input-group">
+                <label>Job Notes</label>
+                <textarea id="est-jobNotes" placeholder="Any special instructions, challenges, or details about this job..."></textarea>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Estimate Summary (fixed, above nav bar) -->
+<div class="est-summary" id="est-summary">
+    <div class="est-summary-card">
+        <div class="est-summary-row">
+            <span class="est-summary-label">Total Hours</span>
+            <span class="est-summary-value" id="est-totalHours">0</span>
+        </div>
+        <div class="est-summary-row">
+            <span class="est-summary-label">Labor Days (8hr)</span>
+            <span class="est-summary-value" id="est-laborDays">0.0</span>
+        </div>
+        <div class="est-summary-row">
+            <span class="est-summary-label">ESTIMATED VALUE</span>
+            <span class="est-summary-value highlight" id="est-totalValue">$0</span>
+        </div>
+        <button class="save-btn" id="est-saveBtn" onclick="estSaveEstimate()">Save Estimate</button>
+    </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════════════════
+     TAB 3: PIPELINE
+     ════════════════════════════════════════════════════════════════════════ -->
+<div id="tab-pipeline" class="tab-content">
+    <div class="error-banner" id="pipe-errorBanner"></div>
+
+    <div class="header">
+        <h1>Job Pipeline</h1>
+        <p style="opacity: 0.7; font-size: 13px;">Live from Google Sheets</p>
+        <div class="header-stats">
+            <div class="stat">
+                <div class="stat-value" id="pipe-statTotal">-</div>
+                <div class="stat-label">Total Jobs</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="pipe-statActive">-</div>
+                <div class="stat-label">Active</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="pipe-statValue">-</div>
+                <div class="stat-label">Pipeline $</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="filters" id="pipe-filters">
+        <button class="filter-btn active" onclick="pipeFilterJobs(this, 'all')">All</button>
+        <button class="filter-btn" onclick="pipeFilterJobs(this, 'New Lead')">New Leads</button>
+        <button class="filter-btn" onclick="pipeFilterJobs(this, 'Estimate Sent')">Estimate Sent</button>
+        <button class="filter-btn" onclick="pipeFilterJobs(this, 'Scheduled')">Scheduled</button>
+        <button class="filter-btn" onclick="pipeFilterJobs(this, 'In Progress')">In Progress</button>
+        <button class="filter-btn" onclick="pipeFilterJobs(this, 'Completed')">Completed</button>
+    </div>
+
+    <div class="pipe-container" id="pipe-jobList">
+        <div class="loading">
+            <div class="loading-spinner"></div>
+            <p>Loading jobs from Google Sheets...</p>
+        </div>
+    </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════════════════
+     TAB 4: ACTIVE JOBS
+     ════════════════════════════════════════════════════════════════════════ -->
+<div id="tab-active" class="tab-content">
+    <div class="error-banner" id="active-errorBanner"></div>
+
+    <div class="header">
+        <h1>Active Jobs</h1>
+        <p style="opacity: 0.7; font-size: 13px;">Scheduled & In Progress</p>
+        <div class="header-stats">
+            <div class="stat">
+                <div class="stat-value" id="active-statScheduled">-</div>
+                <div class="stat-label">Scheduled</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="active-statInProgress">-</div>
+                <div class="stat-label">In Progress</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="active-statValue">-</div>
+                <div class="stat-label">Active $</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="active-container" id="active-jobList" style="padding-top: 16px;">
+        <div class="loading">
+            <div class="loading-spinner"></div>
+            <p>Loading active jobs...</p>
+        </div>
+    </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════════════════
+     SUCCESS MESSAGE (shared)
+     ════════════════════════════════════════════════════════════════════════ -->
+<div class="success-message" id="successMessage">
+    <h2 style="font-size: 48px; margin-bottom: 12px;">&#x2705;</h2>
+    <h3 style="font-size: 20px; margin-bottom: 8px;" id="successTitle">Saved!</h3>
+    <p style="opacity: 0.9;" id="successSubtitle">Data has been saved</p>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════════════════
+     BOTTOM NAV BAR
+     ════════════════════════════════════════════════════════════════════════ -->
+<nav class="bottom-nav">
+    <button class="nav-btn active" onclick="switchTab('intake', this)">
+        <span class="nav-icon">&#x260E;</span>
+        <span>Intake</span>
+    </button>
+    <button class="nav-btn" onclick="switchTab('estimate', this)">
+        <span class="nav-icon">&#x1F4CA;</span>
+        <span>Estimate</span>
+    </button>
+    <button class="nav-btn" onclick="switchTab('pipeline', this)">
+        <span class="nav-icon">&#x1F4CB;</span>
+        <span>Pipeline</span>
+    </button>
+    <button class="nav-btn" onclick="switchTab('active', this)">
+        <span class="nav-icon">&#x1F528;</span>
+        <span>Active</span>
+    </button>
+</nav>
+
+
+<script>
+// ════════════════════════════════════════════════════════════════════════
+// TAB NAVIGATION
+// ════════════════════════════════════════════════════════════════════════
+function switchTab(tabName, btn) {
+    // Hide all tabs
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+
+    // Show selected tab
+    document.getElementById('tab-' + tabName).classList.add('active');
+    btn.classList.add('active');
+
+    // Show/hide estimate summary
+    document.getElementById('est-summary').classList.toggle('visible', tabName === 'estimate');
+
+    // Load jobs data when switching to pipeline or active tabs
+    if (tabName === 'pipeline' || tabName === 'active') {
+        jobsLoadIfNeeded();
+    }
+
+    // Scroll to top
+    window.scrollTo(0, 0);
+}
+
+// ════════════════════════════════════════════════════════════════════════
+// SHARED JOBS CACHE (Pipeline + Active tabs)
+// ════════════════════════════════════════════════════════════════════════
+let jobsCache = { data: null, timestamp: 0 };
+const JOBS_CACHE_TTL = 30000; // 30 seconds
+
+function jobsLoadIfNeeded() {
+    const now = Date.now();
+    if (jobsCache.data && (now - jobsCache.timestamp) < JOBS_CACHE_TTL) {
+        pipeRenderFromCache();
+        activeRenderFromCache();
+        return;
+    }
+    jobsLoad();
+}
+
+function jobsLoad() {
+    // Show loading in both tabs
+    document.getElementById('pipe-jobList').innerHTML =
+        '<div class="loading"><div class="loading-spinner"></div><p>Loading jobs...</p></div>';
+    document.getElementById('active-jobList').innerHTML =
+        '<div class="loading"><div class="loading-spinner"></div><p>Loading active jobs...</p></div>';
+
+    fetch('/api/jobs')
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                jobsCache.data = data.jobs.map((job, index) => ({ ...job, rowIndex: index + 2 }));
+                jobsCache.timestamp = Date.now();
+                pipeRenderFromCache();
+                activeRenderFromCache();
+                document.getElementById('pipe-errorBanner').style.display = 'none';
+                document.getElementById('active-errorBanner').style.display = 'none';
+            } else {
+                pipeShowError('Error loading jobs: ' + data.error);
+                activeShowError('Error loading jobs: ' + data.error);
+            }
+        })
+        .catch(() => {
+            pipeShowError('Cannot connect to server.');
+            activeShowError('Cannot connect to server.');
+        });
+}
+
+function jobsUpdateStatus(rowIndex, newStatus) {
+    fetch('/api/job/' + rowIndex, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            // Force reload
+            jobsCache.timestamp = 0;
+            jobsLoad();
+        } else {
+            alert('Error updating status: ' + data.error);
+        }
+    })
+    .catch(err => alert('Error: ' + err.message));
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function renderJobCard(job, context) {
+    const statusClass = 'status-' + (job['Status'] || 'new-lead').toLowerCase().replace(/\s+/g, '-');
+    const phone = job['Phone'] || '';
+    const value = job['Estimated Value'] || '';
+    const days = job['Estimated Days'] || '';
+
+    return `
+    <div class="job-card">
+        <div class="job-header">
+            <div class="job-name">${escapeHtml(job['Customer Name'] || 'Unknown')}</div>
+            <span class="job-status ${statusClass}">${escapeHtml(job['Status'] || 'New Lead')}</span>
+        </div>
+        <div class="job-address">${escapeHtml(job['Address'] || 'No address')}</div>
+        <div class="job-details">
+            ${phone ? `<div class="job-detail"><span class="job-detail-label">Phone: </span><a href="tel:${escapeHtml(phone)}" class="job-phone">${escapeHtml(phone)}</a></div>` : ''}
+            ${days ? `<div class="job-detail"><span class="job-detail-label">Days: </span><span class="job-detail-value">${escapeHtml(String(days))}</span></div>` : ''}
+            ${value ? `<div class="job-detail"><span class="job-detail-label">Value: </span><span class="job-detail-value">$${escapeHtml(String(value))}</span></div>` : ''}
+        </div>
+        ${job['Job Type'] ? `<span class="job-type-tag">${escapeHtml(job['Job Type'])}</span>` : ''}
+        ${job['Scheduled Date'] ? `<div style="font-size: 13px; color: var(--warning); margin-top: 6px;">Scheduled: ${escapeHtml(job['Scheduled Date'])}</div>` : ''}
+        ${job['Notes'] ? `<div style="font-size: 13px; color: var(--text-dim); margin-top: 6px;">${escapeHtml(job['Notes'])}</div>` : ''}
+        <div class="job-actions">
+            ${phone ? `<a href="tel:${escapeHtml(phone)}" class="job-action-btn call">Call</a>` : ''}
+            <select class="status-select" onchange="jobsUpdateStatus(${job.rowIndex}, this.value)">
+                <option value="" disabled selected>Change Status</option>
+                <option value="New Lead">New Lead</option>
+                <option value="Estimate Sent">Estimate Sent</option>
+                <option value="Scheduled">Scheduled</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Completed">Completed</option>
+                <option value="Cancelled">Cancelled</option>
+            </select>
+        </div>
+    </div>`;
+}
+
+
+// ════════════════════════════════════════════════════════════════════════
+// TAB 1: INTAKE FUNCTIONS
+// ════════════════════════════════════════════════════════════════════════
+function inqToggleCheckbox(elem, id) {
+    const checkbox = document.getElementById(id);
+    checkbox.checked = !checkbox.checked;
+    elem.classList.toggle('checked');
+}
+
+function inqSelectRadio(elem, inputId, value) {
+    const buttons = elem.parentElement.querySelectorAll('.radio-btn');
+    buttons.forEach(btn => btn.classList.remove('active'));
+    elem.classList.add('active');
+    document.getElementById(inputId).value = value;
+}
+
+document.getElementById('inq-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const jobTypes = [];
+    ['inq-interior', 'inq-exterior', 'inq-decks', 'inq-cabinets', 'inq-windows', 'inq-touchup'].forEach(id => {
+        if (document.getElementById(id).checked) {
+            jobTypes.push(document.getElementById(id).value);
+        }
+    });
+
+    if (jobTypes.length === 0) {
+        alert('Please select at least one job type');
+        return;
+    }
+
+    const inquiry = {
+        timestamp: new Date().toISOString(),
+        customerName: document.getElementById('inq-customerName').value,
+        phone: document.getElementById('inq-phone').value,
+        email: document.getElementById('inq-email').value || '',
+        address: document.getElementById('inq-address').value,
+        jobTypes: jobTypes,
+        timeline: document.getElementById('inq-timeline').value || '',
+        lastPainted: document.getElementById('inq-lastPainted').value || '',
+        previousCustomer: document.getElementById('inq-previous').value,
+        notes: document.getElementById('inq-notes').value || '',
+        status: 'New'
+    };
+
+    const submitBtn = document.getElementById('inq-submitBtn');
+    submitBtn.textContent = 'Saving...';
+    submitBtn.disabled = true;
+
+    fetch('/api/inquiry', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(inquiry)
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            // Also save to pipeline
+            fetch('/api/job', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    customerName: inquiry.customerName,
+                    address: inquiry.address,
+                    phone: inquiry.phone,
+                    jobType: inquiry.jobTypes.join(', '),
+                    status: 'New Lead',
+                    notes: inquiry.notes
+                })
+            });
+
+            // Invalidate jobs cache
+            jobsCache.timestamp = 0;
+
+            // Show success
+            showSuccess('Inquiry Saved!', 'Customer info has been saved');
+
+            setTimeout(() => {
+                document.getElementById('inq-form').reset();
+                document.querySelectorAll('#tab-intake .checkbox-item').forEach(item => item.classList.remove('checked'));
+                document.querySelectorAll('#tab-intake .radio-btn').forEach(btn => btn.classList.remove('active'));
+                document.querySelectorAll('#tab-intake .radio-btn')[1].classList.add('active');
+                document.getElementById('inq-previous').value = 'No';
+                submitBtn.textContent = 'Save Inquiry';
+                submitBtn.disabled = false;
+            }, 2000);
+        } else {
+            alert('Error saving: ' + (data.error || 'Unknown error'));
+            submitBtn.textContent = 'Save Inquiry';
+            submitBtn.disabled = false;
+        }
+    })
+    .catch(err => {
+        alert('Could not connect to server.\n\n' + err.message);
+        submitBtn.textContent = 'Save Inquiry';
+        submitBtn.disabled = false;
+    });
+});
+
+
+// ════════════════════════════════════════════════════════════════════════
+// TAB 2: ESTIMATE FUNCTIONS
+// ════════════════════════════════════════════════════════════════════════
+let estConditions = { prep: 1, furniture: 1, ladder: 1 };
+let estSoffitCombined = false;
+
+function estToggleJobType(type) {
+    const intSection = document.getElementById('est-interiorSection');
+    const extSection = document.getElementById('est-exteriorSection');
+    const buttons = document.querySelectorAll('#tab-estimate .toggle-btn');
+
+    if (type === 'interior') {
+        intSection.classList.remove('hidden');
+        extSection.classList.add('hidden');
+        buttons[0].classList.add('active');
+        buttons[1].classList.remove('active');
+    } else {
+        intSection.classList.add('hidden');
+        extSection.classList.remove('hidden');
+        buttons[0].classList.remove('active');
+        buttons[1].classList.add('active');
+    }
+    estCalculate();
+}
+
+function estSetCondition(btn, type, value) {
+    estConditions[type] = value === 'lift' ? 4 : value - 1;
+
+    const buttons = btn.parentElement.querySelectorAll('.condition-btn');
+    buttons.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    estCalculate();
+}
+
+function estToggleCheckbox(elem, id) {
+    const checkbox = document.getElementById(id);
+    checkbox.checked = !checkbox.checked;
+    elem.classList.toggle('checked');
+}
+
+function estToggleCombine() {
+    estSoffitCombined = !estSoffitCombined;
+    const btn = document.getElementById('est-combineSoffit');
+    btn.classList.toggle('active');
+    btn.textContent = estSoffitCombined ? '\u2713 Combined' : 'Combine w/ Fascia';
+    estCalculate();
+}
+
+function estCalculate() {
+    let totalHours = 0;
+
+    // INTERIOR CALCULATIONS
+    const wallsSF = parseFloat(document.getElementById('est-intWalls').value) || 0;
+    const wallsRate = parseFloat(document.getElementById('est-intWallsRate').value);
+    const wallsHours = wallsSF / wallsRate;
+    totalHours += wallsHours;
+    document.getElementById('est-intWallsHours').textContent = wallsHours.toFixed(1) + 'h';
+
+    const ceilingsSF = parseFloat(document.getElementById('est-intCeilings').value) || 0;
+    const ceilingsRate = parseFloat(document.getElementById('est-intCeilingsRate').value);
+    const ceilingsHours = ceilingsSF / ceilingsRate;
+    totalHours += ceilingsHours;
+    document.getElementById('est-intCeilingsHours').textContent = ceilingsHours.toFixed(1) + 'h';
+
+    const baseboard = parseFloat(document.getElementById('est-intBaseboard').value) || 0;
+    const baseboardRate = parseFloat(document.getElementById('est-intBaseboardRate').value);
+    const baseboardHours = baseboard * baseboardRate;
+    totalHours += baseboardHours;
+    document.getElementById('est-intBaseboardHours').textContent = baseboardHours.toFixed(1) + 'h';
+
+    const casement = parseFloat(document.getElementById('est-intCasement').value) || 0;
+    const casementRate = parseFloat(document.getElementById('est-intCasementRate').value);
+    const casementHours = casement * casementRate;
+    totalHours += casementHours;
+    document.getElementById('est-intCasementHours').textContent = casementHours.toFixed(1) + 'h';
+
+    const intWindows = parseFloat(document.getElementById('est-intWindows').value) || 0;
+    const intWindowsHours = intWindows * 5;
+    totalHours += intWindowsHours;
+    document.getElementById('est-intWindowsHours').textContent = intWindowsHours.toFixed(1) + 'h';
+
+    const intDoors = parseFloat(document.getElementById('est-intDoors').value) || 0;
+    const intDoorsRate = parseFloat(document.getElementById('est-intDoorsRate').value);
+    const intDoorsHours = intDoors * intDoorsRate;
+    totalHours += intDoorsHours;
+    document.getElementById('est-intDoorsHours').textContent = intDoorsHours.toFixed(1) + 'h';
+
+    const cabinets = parseFloat(document.getElementById('est-intCabinets').value) || 0;
+    const cabinetsHours = cabinets * 4;
+    totalHours += cabinetsHours;
+    document.getElementById('est-intCabinetsHours').textContent = cabinetsHours.toFixed(1) + 'h';
+
+    const closets = parseFloat(document.getElementById('est-intClosets').value) || 0;
+    const closetsHours = closets / 15;
+    totalHours += closetsHours;
+    document.getElementById('est-intClosetsHours').textContent = closetsHours.toFixed(1) + 'h';
+
+    const builtins = parseFloat(document.getElementById('est-intBuiltins').value) || 0;
+    const builtinsHours = builtins * 4;
+    totalHours += builtinsHours;
+    document.getElementById('est-intBuiltinsHours').textContent = builtinsHours.toFixed(1) + 'h';
+
+    const woodwork = parseFloat(document.getElementById('est-intWoodwork').value) || 0;
+    totalHours += woodwork;
+    document.getElementById('est-intWoodworkHours').textContent = woodwork.toFixed(1) + 'h';
+
+    const intPosts = parseFloat(document.getElementById('est-intPosts').value) || 0;
+    const intPostsRate = parseFloat(document.getElementById('est-intPostsRate').value);
+    const intPostsHours = intPosts * intPostsRate;
+    totalHours += intPostsHours;
+    document.getElementById('est-intPostsHours').textContent = intPostsHours.toFixed(1) + 'h';
+
+    // EXTERIOR CALCULATIONS
+    const siding = parseFloat(document.getElementById('est-extSiding').value) || 0;
+    const sidingHours = siding / 100;
+    totalHours += sidingHours;
+    document.getElementById('est-extSidingHours').textContent = sidingHours.toFixed(1) + 'h';
+
+    const trim = parseFloat(document.getElementById('est-extTrim').value) || 0;
+    const trimRate = parseFloat(document.getElementById('est-extTrimRate').value);
+    const trimHours = trim * trimRate;
+    totalHours += trimHours;
+    document.getElementById('est-extTrimHours').textContent = trimHours.toFixed(1) + 'h';
+
+    const corner = parseFloat(document.getElementById('est-extCorner').value) || 0;
+    const cornerHours = corner / 20;
+    totalHours += cornerHours;
+    document.getElementById('est-extCornerHours').textContent = cornerHours.toFixed(1) + 'h';
+
+    const belly = parseFloat(document.getElementById('est-extBelly').value) || 0;
+    const bellyHours = belly / 15;
+    totalHours += bellyHours;
+    document.getElementById('est-extBellyHours').textContent = bellyHours.toFixed(1) + 'h';
+
+    const extWindows = parseFloat(document.getElementById('est-extWindows').value) || 0;
+    const extWindowsHours = extWindows * 4;
+    totalHours += extWindowsHours;
+    document.getElementById('est-extWindowsHours').textContent = extWindowsHours.toFixed(1) + 'h';
+
+    const extDoors = parseFloat(document.getElementById('est-extDoors').value) || 0;
+    const extDoorsHours = extDoors * 8;
+    totalHours += extDoorsHours;
+    document.getElementById('est-extDoorsHours').textContent = extDoorsHours.toFixed(1) + 'h';
+
+    const fascia = parseFloat(document.getElementById('est-extFascia').value) || 0;
+    const fasciaRate = parseFloat(document.getElementById('est-extFasciaRate').value);
+    const fasciaHours = fascia * fasciaRate;
+    totalHours += fasciaHours;
+    document.getElementById('est-extFasciaHours').textContent = fasciaHours.toFixed(1) + 'h';
+
+    const soffit = parseFloat(document.getElementById('est-extSoffit').value) || 0;
+    const soffitRate = parseFloat(document.getElementById('est-extSoffitRate').value);
+    const soffitHours = estSoffitCombined ? 0 : soffit * soffitRate;
+    totalHours += soffitHours;
+    document.getElementById('est-extSoffitHours').textContent = estSoffitCombined ? 'Combined' : soffitHours.toFixed(1) + 'h';
+
+    const extPosts = parseFloat(document.getElementById('est-extPosts').value) || 0;
+    const extPostsRate = parseFloat(document.getElementById('est-extPostsRate').value);
+    const extPostsHours = extPosts * extPostsRate;
+    totalHours += extPostsHours;
+    document.getElementById('est-extPostsHours').textContent = extPostsHours.toFixed(1) + 'h';
+
+    const logs = parseFloat(document.getElementById('est-extLogs').value) || 0;
+    const logsRate = parseFloat(document.getElementById('est-extLogsRate').value);
+    const logsHours = logs / logsRate;
+    totalHours += logsHours;
+    document.getElementById('est-extLogsHours').textContent = logsHours.toFixed(1) + 'h';
+
+    const metal = parseFloat(document.getElementById('est-extMetal').value) || 0;
+    totalHours += metal;
+    document.getElementById('est-extMetalHours').textContent = metal.toFixed(1) + 'h';
+
+    const garage = parseFloat(document.getElementById('est-extGarage').value) || 0;
+    const garageHours = garage * 12;
+    totalHours += garageHours;
+    document.getElementById('est-extGarageHours').textContent = garageHours.toFixed(1) + 'h';
+
+    const furniture = parseFloat(document.getElementById('est-extFurniture').value) || 0;
+    const furnitureRate = parseFloat(document.getElementById('est-extFurnitureRate').value);
+    const furnitureHours = furniture * furnitureRate;
+    totalHours += furnitureHours;
+    document.getElementById('est-extFurnitureHours').textContent = furnitureHours.toFixed(1) + 'h';
+
+    const deck = parseFloat(document.getElementById('est-extDeck').value) || 0;
+    const deckHours = (deck / 100) * 3;
+    totalHours += deckHours;
+    document.getElementById('est-extDeckHours').textContent = deckHours.toFixed(1) + 'h';
+
+    const stairs = parseFloat(document.getElementById('est-extStairs').value) || 0;
+    const stairsHours = stairs * 0.5;
+    totalHours += stairsHours;
+    document.getElementById('est-extStairsHours').textContent = stairsHours.toFixed(1) + 'h';
+
+    const railings = parseFloat(document.getElementById('est-extRailings').value) || 0;
+    const railingsRate = parseFloat(document.getElementById('est-extRailingsRate').value);
+    const railingsHours = railings * railingsRate;
+    totalHours += railingsHours;
+    document.getElementById('est-extRailingsHours').textContent = railingsHours.toFixed(1) + 'h';
+
+    const joists = parseFloat(document.getElementById('est-extJoists').value) || 0;
+    const joistsRate = parseFloat(document.getElementById('est-extJoistsRate').value);
+    const joistsHours = joists * joistsRate;
+    totalHours += joistsHours;
+    document.getElementById('est-extJoistsHours').textContent = joistsHours.toFixed(1) + 'h';
+
+    const rafters = parseFloat(document.getElementById('est-extRafters').value) || 0;
+    const raftersHours = rafters * 0.5;
+    totalHours += raftersHours;
+    document.getElementById('est-extRaftersHours').textContent = raftersHours.toFixed(1) + 'h';
+
+    const fence = parseFloat(document.getElementById('est-extFence').value) || 0;
+    totalHours += fence;
+    document.getElementById('est-extFenceHours').textContent = fence.toFixed(1) + 'h';
+
+    const chinking = parseFloat(document.getElementById('est-extChinking').value) || 0;
+    const chinkingHours = chinking / 10;
+    totalHours += chinkingHours;
+    document.getElementById('est-extChinkingHours').textContent = chinkingHours.toFixed(1) + 'h';
+
+    // Apply condition multipliers
+    const multipliers = {
+        prep: [1.0, 1.15, 1.3, 1.5],
+        furniture: [1.0, 1.1, 1.2, 1.35],
+        ladder: [1.0, 1.05, 1.15, 1.25, 1.4]
+    };
+
+    const prepMult = multipliers.prep[estConditions.prep];
+    const furnMult = multipliers.furniture[estConditions.furniture];
+    const ladderMult = multipliers.ladder[estConditions.ladder];
+
+    const adjustmentFactor = (prepMult - 1) + (furnMult - 1) + (ladderMult - 1);
+    const adjustedHours = totalHours * (1 + adjustmentFactor);
+
+    const laborDays = Math.ceil(adjustedHours / 8 * 2) / 2;
+
+    document.getElementById('est-totalHours').textContent = adjustedHours.toFixed(1);
+    document.getElementById('est-laborDays').textContent = laborDays.toFixed(1);
+    document.getElementById('est-totalValue').textContent = '$' + (laborDays * 450).toLocaleString();
+}
+
+function estSaveEstimate() {
+    const tools = [];
+    ['est-toolWasher', 'est-toolSprayer', 'est-toolScaffold', 'est-toolLift', 'est-toolHVLP'].forEach(id => {
+        if (document.getElementById(id).checked) {
+            tools.push(document.getElementById(id).value);
+        }
+    });
+
+    const estimate = {
+        jobAddress: document.getElementById('est-jobAddress').value,
+        customerName: document.getElementById('est-customerName').value,
+        estimator: document.getElementById('est-estimator').value,
+        date: new Date().toLocaleDateString(),
+        conditions: {
+            prep: estConditions.prep + 1,
+            furniture: estConditions.furniture + 1,
+            ladder: estConditions.ladder === 4 ? 'LIFT' : estConditions.ladder + 1
+        },
+        colors: document.getElementById('est-colors').value,
+        tools: tools,
+        notes: document.getElementById('est-jobNotes').value,
+        totalHours: parseFloat(document.getElementById('est-totalHours').textContent),
+        laborDays: parseFloat(document.getElementById('est-laborDays').textContent),
+        totalValue: parseFloat(document.getElementById('est-laborDays').textContent) * 450
+    };
+
+    const isInterior = !document.getElementById('est-interiorSection').classList.contains('hidden');
+    estimate.jobType = isInterior ? 'Interior' : 'Exterior';
+
+    const saveBtn = document.getElementById('est-saveBtn');
+    saveBtn.textContent = 'Saving...';
+    saveBtn.disabled = true;
+
+    fetch('/api/estimate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(estimate)
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            const summary = `ESTIMATE: ${estimate.customerName} | ${estimate.jobAddress}\nDays: ${estimate.laborDays} | Value: $${estimate.totalValue.toLocaleString()}`;
+            navigator.clipboard.writeText(summary).catch(() => {});
+
+            alert('\u2705 Estimate saved to Google Sheets!\n\nDays: ' + estimate.laborDays + ' | Value: $' + estimate.totalValue.toLocaleString());
+        } else {
+            alert('Error saving: ' + (data.error || 'Unknown error'));
+        }
+        saveBtn.textContent = 'Save Estimate';
+        saveBtn.disabled = false;
+    })
+    .catch(err => {
+        alert('Could not connect to server.\n\n' + err.message);
+        saveBtn.textContent = 'Save Estimate';
+        saveBtn.disabled = false;
+    });
+}
+
+// Initialize estimate
+estCalculate();
+
+
+// ════════════════════════════════════════════════════════════════════════
+// TAB 3: PIPELINE FUNCTIONS
+// ════════════════════════════════════════════════════════════════════════
+let pipeCurrentFilter = 'all';
+
+function pipeFilterJobs(btn, status) {
+    pipeCurrentFilter = status;
+    document.querySelectorAll('#pipe-filters .filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    pipeRenderFromCache();
+}
+
+function pipeRenderFromCache() {
+    if (!jobsCache.data) return;
+    const allJobs = jobsCache.data;
+
+    // Update stats
+    const total = allJobs.length;
+    const active = allJobs.filter(j => !['Completed', 'Cancelled'].includes(j['Status'])).length;
+    const value = allJobs
+        .filter(j => !['Completed', 'Cancelled'].includes(j['Status']))
+        .reduce((sum, j) => sum + (parseFloat(String(j['Estimated Value']).replace(/[$,]/g, '')) || 0), 0);
+
+    document.getElementById('pipe-statTotal').textContent = total;
+    document.getElementById('pipe-statActive').textContent = active;
+    document.getElementById('pipe-statValue').textContent = '$' + Math.round(value).toLocaleString();
+
+    // Filter
+    const filtered = pipeCurrentFilter === 'all'
+        ? allJobs
+        : allJobs.filter(j => j['Status'] === pipeCurrentFilter);
+
+    if (filtered.length === 0) {
+        document.getElementById('pipe-jobList').innerHTML = `
+            <div class="empty-state">
+                <h3>No jobs found</h3>
+                <p>${pipeCurrentFilter === 'all' ? 'Add jobs using the Intake tab' : 'No jobs with status "' + pipeCurrentFilter + '"'}</p>
+            </div>`;
+        return;
+    }
+
+    document.getElementById('pipe-jobList').innerHTML = filtered.map(job => renderJobCard(job, 'pipe')).join('');
+}
+
+function pipeShowError(msg) {
+    const banner = document.getElementById('pipe-errorBanner');
+    banner.textContent = msg;
+    banner.style.display = 'block';
+    document.getElementById('pipe-jobList').innerHTML = `
+        <div class="empty-state">
+            <h3>Connection Error</h3>
+            <p>Check your internet connection and try again.</p>
+        </div>`;
+}
+
+
+// ════════════════════════════════════════════════════════════════════════
+// TAB 4: ACTIVE JOBS FUNCTIONS
+// ════════════════════════════════════════════════════════════════════════
+function activeRenderFromCache() {
+    if (!jobsCache.data) return;
+
+    const activeJobs = jobsCache.data.filter(j =>
+        j['Status'] === 'Scheduled' || j['Status'] === 'In Progress'
+    );
+
+    // Update stats
+    const scheduled = activeJobs.filter(j => j['Status'] === 'Scheduled').length;
+    const inProgress = activeJobs.filter(j => j['Status'] === 'In Progress').length;
+    const value = activeJobs.reduce((sum, j) =>
+        sum + (parseFloat(String(j['Estimated Value']).replace(/[$,]/g, '')) || 0), 0);
+
+    document.getElementById('active-statScheduled').textContent = scheduled;
+    document.getElementById('active-statInProgress').textContent = inProgress;
+    document.getElementById('active-statValue').textContent = '$' + Math.round(value).toLocaleString();
+
+    if (activeJobs.length === 0) {
+        document.getElementById('active-jobList').innerHTML = `
+            <div class="empty-state">
+                <h3>No active jobs</h3>
+                <p>Jobs with status "Scheduled" or "In Progress" will appear here.</p>
+            </div>`;
+        return;
+    }
+
+    document.getElementById('active-jobList').innerHTML = activeJobs.map(job => renderJobCard(job, 'active')).join('');
+}
+
+function activeShowError(msg) {
+    const banner = document.getElementById('active-errorBanner');
+    banner.textContent = msg;
+    banner.style.display = 'block';
+    document.getElementById('active-jobList').innerHTML = `
+        <div class="empty-state">
+            <h3>Connection Error</h3>
+            <p>Check your internet connection and try again.</p>
+        </div>`;
+}
+
+
+// ════════════════════════════════════════════════════════════════════════
+// SHARED UTILITIES
+// ════════════════════════════════════════════════════════════════════════
+function showSuccess(title, subtitle) {
+    const msg = document.getElementById('successMessage');
+    document.getElementById('successTitle').textContent = title;
+    document.getElementById('successSubtitle').textContent = subtitle;
+    msg.classList.add('show');
+    setTimeout(() => msg.classList.remove('show'), 2000);
+}
+</script>
+</body>
+</html>
