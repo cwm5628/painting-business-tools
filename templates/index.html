@@ -330,7 +330,7 @@
 
         .substrate-item {
             display: grid;
-            grid-template-columns: 1fr 100px 80px;
+            grid-template-columns: 1fr 100px 100px;
             gap: 8px;
             align-items: start;
             padding: 12px 0;
@@ -879,6 +879,50 @@
             </div>
         </div>
 
+        <!-- Intake Info (shows when address matches) -->
+        <div class="section" id="est-intakeInfo" style="display: none; border-color: var(--warning);">
+            <div class="section-title" style="color: var(--warning);">Intake Info</div>
+            <div id="est-intakeDetails" style="font-size: 14px; line-height: 1.8;"></div>
+        </div>
+
+        <!-- CONDITIONS (moved above substrates) -->
+        <div class="section">
+            <div class="section-title">Job Conditions</div>
+
+            <label style="display: block; margin-bottom: 8px; font-size: 14px; font-weight: 600;">Power Wash</label>
+            <div class="condition-selector" style="grid-template-columns: repeat(2, 1fr);">
+                <button class="condition-btn" onclick="estSetPowerWash(this, true)">Yes</button>
+                <button class="condition-btn active" onclick="estSetPowerWash(this, false)">No</button>
+            </div>
+
+            <label style="display: block; margin: 16px 0 8px 0; font-size: 14px; font-weight: 600;">Prep Condition</label>
+            <div class="condition-selector">
+                <button class="condition-btn active" onclick="estSetCondition(this, 'prep', 1)">1<br><span style="font-size: 11px;">Good</span></button>
+                <button class="condition-btn" onclick="estSetCondition(this, 'prep', 2)">2<br><span style="font-size: 11px;">Moderate</span></button>
+                <button class="condition-btn" onclick="estSetCondition(this, 'prep', 3)">3<br><span style="font-size: 11px;">Heavy</span></button>
+                <button class="condition-btn" onclick="estSetCondition(this, 'prep', 4)">4<br><span style="font-size: 11px;">Major</span></button>
+            </div>
+
+            <label style="display: block; margin: 16px 0 8px 0; font-size: 14px; font-weight: 600;">Furniture Level</label>
+            <div class="condition-selector">
+                <button class="condition-btn active" onclick="estSetCondition(this, 'furniture', 1)">1<br><span style="font-size: 11px;">Light</span></button>
+                <button class="condition-btn" onclick="estSetCondition(this, 'furniture', 2)">2<br><span style="font-size: 11px;">Normal</span></button>
+                <button class="condition-btn" onclick="estSetCondition(this, 'furniture', 3)">3<br><span style="font-size: 11px;">Lot</span></button>
+                <button class="condition-btn" onclick="estSetCondition(this, 'furniture', 4)">4<br><span style="font-size: 11px;">Tight</span></button>
+            </div>
+
+            <label style="display: block; margin: 16px 0 8px 0; font-size: 14px; font-weight: 600;">Ladder Requirements</label>
+            <div class="condition-selector">
+                <button class="condition-btn active" onclick="estSetCondition(this, 'ladder', 1)">1<br><span style="font-size: 11px;">8ft</span></button>
+                <button class="condition-btn" onclick="estSetCondition(this, 'ladder', 2)">2<br><span style="font-size: 11px;">20ft</span></button>
+                <button class="condition-btn" onclick="estSetCondition(this, 'ladder', 3)">3<br><span style="font-size: 11px;">32ft</span></button>
+                <button class="condition-btn" onclick="estSetCondition(this, 'ladder', 4)">4<br><span style="font-size: 11px;">40ft</span></button>
+            </div>
+            <div class="condition-selector" style="margin-top: 8px;">
+                <button class="condition-btn" onclick="estSetCondition(this, 'ladder', 'lift')" style="grid-column: span 2;">LIFT<br><span style="font-size: 11px;">Lift Required</span></button>
+            </div>
+        </div>
+
         <!-- Job Type Toggle -->
         <div class="toggle-section">
             <button class="toggle-btn active" onclick="estToggleJobType('interior')">Interior</button>
@@ -1184,38 +1228,6 @@
                     <div class="substrate-input"><input type="number" id="est-extChinking" placeholder="0" onchange="estCalculate()"></div>
                     <div class="substrate-hours" id="est-extChinkingHours">0h</div>
                 </div>
-            </div>
-        </div>
-
-        <!-- CONDITIONS -->
-        <div class="section">
-            <div class="section-title">Job Conditions</div>
-
-            <label style="display: block; margin-bottom: 8px; font-size: 14px; font-weight: 600;">Prep Condition</label>
-            <div class="condition-selector">
-                <button class="condition-btn active" onclick="estSetCondition(this, 'prep', 1)">1<br><span style="font-size: 11px;">Good</span></button>
-                <button class="condition-btn" onclick="estSetCondition(this, 'prep', 2)">2<br><span style="font-size: 11px;">Moderate</span></button>
-                <button class="condition-btn" onclick="estSetCondition(this, 'prep', 3)">3<br><span style="font-size: 11px;">Heavy</span></button>
-                <button class="condition-btn" onclick="estSetCondition(this, 'prep', 4)">4<br><span style="font-size: 11px;">Major</span></button>
-            </div>
-
-            <label style="display: block; margin: 16px 0 8px 0; font-size: 14px; font-weight: 600;">Furniture Level</label>
-            <div class="condition-selector">
-                <button class="condition-btn active" onclick="estSetCondition(this, 'furniture', 1)">1<br><span style="font-size: 11px;">Light</span></button>
-                <button class="condition-btn" onclick="estSetCondition(this, 'furniture', 2)">2<br><span style="font-size: 11px;">Normal</span></button>
-                <button class="condition-btn" onclick="estSetCondition(this, 'furniture', 3)">3<br><span style="font-size: 11px;">Lot</span></button>
-                <button class="condition-btn" onclick="estSetCondition(this, 'furniture', 4)">4<br><span style="font-size: 11px;">Tight</span></button>
-            </div>
-
-            <label style="display: block; margin: 16px 0 8px 0; font-size: 14px; font-weight: 600;">Ladder Requirements</label>
-            <div class="condition-selector">
-                <button class="condition-btn active" onclick="estSetCondition(this, 'ladder', 1)">1<br><span style="font-size: 11px;">8ft</span></button>
-                <button class="condition-btn" onclick="estSetCondition(this, 'ladder', 2)">2<br><span style="font-size: 11px;">20ft</span></button>
-                <button class="condition-btn" onclick="estSetCondition(this, 'ladder', 3)">3<br><span style="font-size: 11px;">32ft</span></button>
-                <button class="condition-btn" onclick="estSetCondition(this, 'ladder', 4)">4<br><span style="font-size: 11px;">40ft</span></button>
-            </div>
-            <div class="condition-selector" style="margin-top: 8px;">
-                <button class="condition-btn" onclick="estSetCondition(this, 'ladder', 'lift')" style="grid-column: span 2;">LIFT<br><span style="font-size: 11px;">Lift Required</span></button>
             </div>
         </div>
 
@@ -1651,9 +1663,38 @@ document.getElementById('inq-form').addEventListener('submit', function(e) {
 // ════════════════════════════════════════════════════════════════════════
 // TAB 2: ESTIMATE FUNCTIONS
 // ════════════════════════════════════════════════════════════════════════
+const HOURLY_RATE = 60;
+const DAY_RATE = 480;
 let estConditions = { prep: 1, furniture: 1, ladder: 1 };
 let estSoffitCombined = false;
 let estMaterialPct = 0.15;
+let estPowerWash = false;
+let estInquiryCache = null;
+
+function estShowSubstrate(id, hours, dollars) {
+    const el = document.getElementById(id);
+    if (hours === 0 && dollars === 0) {
+        el.innerHTML = '0h';
+    } else {
+        el.innerHTML = hours.toFixed(1) + 'h<br><span style="color: var(--warning); font-size: 12px;">$' + Math.round(dollars).toLocaleString() + '</span>';
+    }
+}
+
+function estSetPowerWash(btn, value) {
+    estPowerWash = value;
+    const buttons = btn.parentElement.querySelectorAll('.condition-btn');
+    buttons.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const washerCheckbox = document.getElementById('est-toolWasher');
+    const washerItem = washerCheckbox.closest('.checkbox-item');
+    if (value && !washerCheckbox.checked) {
+        washerCheckbox.checked = true;
+        washerItem.classList.add('checked');
+    } else if (!value && washerCheckbox.checked) {
+        washerCheckbox.checked = false;
+        washerItem.classList.remove('checked');
+    }
+}
 
 function estToggleJobType(type) {
     const intSection = document.getElementById('est-interiorSection');
@@ -1744,86 +1785,132 @@ function estCheckAddress() {
     if (match && match['Customer Name']) {
         document.getElementById('est-customerName').value = match['Customer Name'];
     }
+    // Fetch and display intake form data for this address
+    estFetchInquiryData(addr);
+}
+
+function estFetchInquiryData(addr) {
+    if (!addr) {
+        document.getElementById('est-intakeInfo').style.display = 'none';
+        return;
+    }
+    const doLookup = function(inquiries) {
+        const match = inquiries.find(i => (i['Address'] || '') === addr);
+        const infoDiv = document.getElementById('est-intakeInfo');
+        const detailsDiv = document.getElementById('est-intakeDetails');
+        if (match) {
+            let html = '';
+            const jobTypes = match['Job Types'] || '';
+            const timeline = match['Timeline'] || '';
+            const lastPainted = match['Last Painted'] || '';
+            const prevCustomer = match['Previous Customer'] || '';
+            const notes = match['Notes'] || '';
+            const missing = '<span style="color: var(--danger);">Not answered</span>';
+            if (jobTypes) html += '<div><strong>Job Types:</strong> ' + escapeHtml(jobTypes) + '</div>';
+            html += '<div><strong>Timeline:</strong> ' + (timeline ? escapeHtml(timeline) : missing) + '</div>';
+            html += '<div><strong>Last Painted:</strong> ' + (lastPainted ? escapeHtml(lastPainted) : missing) + '</div>';
+            html += '<div><strong>Previous Customer:</strong> ' + (prevCustomer ? escapeHtml(prevCustomer) : missing) + '</div>';
+            html += '<div><strong>Notes:</strong> ' + (notes ? escapeHtml(notes) : missing) + '</div>';
+            detailsDiv.innerHTML = html;
+            infoDiv.style.display = 'block';
+        } else {
+            infoDiv.style.display = 'none';
+        }
+    };
+    if (estInquiryCache) {
+        doLookup(estInquiryCache);
+    } else {
+        fetch('/api/inquiries').then(r => r.json()).then(data => {
+            if (data.success) {
+                estInquiryCache = data.inquiries;
+                doLookup(estInquiryCache);
+            }
+        }).catch(function() {});
+    }
 }
 
 function estCalculate() {
     let totalHours = 0;
 
     // INTERIOR CALCULATIONS
+    // Walls - rate is $/sf: dollars = sf * rate, hours = dollars / hourly rate
     const wallsSF = parseFloat(document.getElementById('est-intWalls').value) || 0;
     const wallsRate = parseFloat(document.getElementById('est-intWallsRate').value);
-    const wallsHours = wallsSF / wallsRate;
+    const wallsDollars = wallsSF * wallsRate;
+    const wallsHours = wallsDollars / HOURLY_RATE;
     totalHours += wallsHours;
-    document.getElementById('est-intWallsHours').textContent = wallsHours.toFixed(1) + 'h';
+    estShowSubstrate('est-intWallsHours', wallsHours, wallsDollars);
 
+    // Ceilings - rate is $/sf
     const ceilingsSF = parseFloat(document.getElementById('est-intCeilings').value) || 0;
     const ceilingsRate = parseFloat(document.getElementById('est-intCeilingsRate').value);
-    const ceilingsHours = ceilingsSF / ceilingsRate;
+    const ceilingsDollars = ceilingsSF * ceilingsRate;
+    const ceilingsHours = ceilingsDollars / HOURLY_RATE;
     totalHours += ceilingsHours;
-    document.getElementById('est-intCeilingsHours').textContent = ceilingsHours.toFixed(1) + 'h';
+    estShowSubstrate('est-intCeilingsHours', ceilingsHours, ceilingsDollars);
 
     // Baseboard - input is total linear ft, divide by 10 to get units
     const baseboard = parseFloat(document.getElementById('est-intBaseboard').value) || 0;
     const baseboardRate = parseFloat(document.getElementById('est-intBaseboardRate').value);
     const baseboardHours = (baseboard / 10) * baseboardRate;
     totalHours += baseboardHours;
-    document.getElementById('est-intBaseboardHours').textContent = baseboardHours.toFixed(1) + 'h';
+    estShowSubstrate('est-intBaseboardHours', baseboardHours, baseboardHours * HOURLY_RATE);
 
     // Casement - input is total linear ft, divide by 10 to get units
     const casement = parseFloat(document.getElementById('est-intCasement').value) || 0;
     const casementRate = parseFloat(document.getElementById('est-intCasementRate').value);
     const casementHours = (casement / 10) * casementRate;
     totalHours += casementHours;
-    document.getElementById('est-intCasementHours').textContent = casementHours.toFixed(1) + 'h';
+    estShowSubstrate('est-intCasementHours', casementHours, casementHours * HOURLY_RATE);
 
     const intWindows = parseFloat(document.getElementById('est-intWindows').value) || 0;
     const intWindowsHours = intWindows * 5;
     totalHours += intWindowsHours;
-    document.getElementById('est-intWindowsHours').textContent = intWindowsHours.toFixed(1) + 'h';
+    estShowSubstrate('est-intWindowsHours', intWindowsHours, intWindowsHours * HOURLY_RATE);
 
     const intDoors = parseFloat(document.getElementById('est-intDoors').value) || 0;
     const intDoorsRate = parseFloat(document.getElementById('est-intDoorsRate').value);
     const intDoorsHours = intDoors * intDoorsRate;
     totalHours += intDoorsHours;
-    document.getElementById('est-intDoorsHours').textContent = intDoorsHours.toFixed(1) + 'h';
+    estShowSubstrate('est-intDoorsHours', intDoorsHours, intDoorsHours * HOURLY_RATE);
 
     const cabinets = parseFloat(document.getElementById('est-intCabinets').value) || 0;
     const cabinetsHours = cabinets * 4;
     totalHours += cabinetsHours;
-    document.getElementById('est-intCabinetsHours').textContent = cabinetsHours.toFixed(1) + 'h';
+    estShowSubstrate('est-intCabinetsHours', cabinetsHours, cabinetsHours * HOURLY_RATE);
 
     const closets = parseFloat(document.getElementById('est-intClosets').value) || 0;
     const closetsHours = closets / 15;
     totalHours += closetsHours;
-    document.getElementById('est-intClosetsHours').textContent = closetsHours.toFixed(1) + 'h';
+    estShowSubstrate('est-intClosetsHours', closetsHours, closetsHours * HOURLY_RATE);
 
     const builtins = parseFloat(document.getElementById('est-intBuiltins').value) || 0;
     const builtinsHours = builtins * 4;
     totalHours += builtinsHours;
-    document.getElementById('est-intBuiltinsHours').textContent = builtinsHours.toFixed(1) + 'h';
+    estShowSubstrate('est-intBuiltinsHours', builtinsHours, builtinsHours * HOURLY_RATE);
 
     const woodwork = parseFloat(document.getElementById('est-intWoodwork').value) || 0;
     totalHours += woodwork;
-    document.getElementById('est-intWoodworkHours').textContent = woodwork.toFixed(1) + 'h';
+    estShowSubstrate('est-intWoodworkHours', woodwork, woodwork * HOURLY_RATE);
 
     const intPosts = parseFloat(document.getElementById('est-intPosts').value) || 0;
     const intPostsRate = parseFloat(document.getElementById('est-intPostsRate').value);
     const intPostsHours = intPosts * intPostsRate;
     totalHours += intPostsHours;
-    document.getElementById('est-intPostsHours').textContent = intPostsHours.toFixed(1) + 'h';
+    estShowSubstrate('est-intPostsHours', intPostsHours, intPostsHours * HOURLY_RATE);
 
     // EXTERIOR CALCULATIONS
     const siding = parseFloat(document.getElementById('est-extSiding').value) || 0;
     const sidingHours = siding / 100;
     totalHours += sidingHours;
-    document.getElementById('est-extSidingHours').textContent = sidingHours.toFixed(1) + 'h';
+    estShowSubstrate('est-extSidingHours', sidingHours, sidingHours * HOURLY_RATE);
 
     // Fascia - input is total linear ft, divide by 10 to get units
     const fascia = parseFloat(document.getElementById('est-extFascia').value) || 0;
     const fasciaRate = parseFloat(document.getElementById('est-extFasciaRate').value);
     const fasciaHours = (fascia / 10) * fasciaRate;
     totalHours += fasciaHours;
-    document.getElementById('est-extFasciaHours').textContent = fasciaHours.toFixed(1) + 'h';
+    estShowSubstrate('est-extFasciaHours', fasciaHours, fasciaHours * HOURLY_RATE);
 
     // Soffit - input is total linear ft, divide by 10 to get units
     // When combined with fascia, soffit adds 0 extra hours
@@ -1831,103 +1918,107 @@ function estCalculate() {
     const soffitRate = parseFloat(document.getElementById('est-extSoffitRate').value);
     const soffitHours = estSoffitCombined ? 0 : (soffit / 10) * soffitRate;
     totalHours += soffitHours;
-    document.getElementById('est-extSoffitHours').textContent = estSoffitCombined ? '0h (combined)' : soffitHours.toFixed(1) + 'h';
+    if (estSoffitCombined) {
+        document.getElementById('est-extSoffitHours').innerHTML = '0h (combined)';
+    } else {
+        estShowSubstrate('est-extSoffitHours', soffitHours, soffitHours * HOURLY_RATE);
+    }
 
     // Window Trim - count * 1hr each
     const windowTrim = parseFloat(document.getElementById('est-extWindowTrim').value) || 0;
     const windowTrimHours = windowTrim * 1;
     totalHours += windowTrimHours;
-    document.getElementById('est-extWindowTrimHours').textContent = windowTrimHours.toFixed(1) + 'h';
+    estShowSubstrate('est-extWindowTrimHours', windowTrimHours, windowTrimHours * HOURLY_RATE);
 
     // Door Trim - count * 1.33hr each (80 min)
     const doorTrim = parseFloat(document.getElementById('est-extDoorTrim').value) || 0;
     const doorTrimHours = doorTrim * 1.33;
     totalHours += doorTrimHours;
-    document.getElementById('est-extDoorTrimHours').textContent = doorTrimHours.toFixed(1) + 'h';
+    estShowSubstrate('est-extDoorTrimHours', doorTrimHours, doorTrimHours * HOURLY_RATE);
 
     const corner = parseFloat(document.getElementById('est-extCorner').value) || 0;
     const cornerHours = corner / 20;
     totalHours += cornerHours;
-    document.getElementById('est-extCornerHours').textContent = cornerHours.toFixed(1) + 'h';
+    estShowSubstrate('est-extCornerHours', cornerHours, cornerHours * HOURLY_RATE);
 
     const belly = parseFloat(document.getElementById('est-extBelly').value) || 0;
     const bellyHours = belly / 15;
     totalHours += bellyHours;
-    document.getElementById('est-extBellyHours').textContent = bellyHours.toFixed(1) + 'h';
+    estShowSubstrate('est-extBellyHours', bellyHours, bellyHours * HOURLY_RATE);
 
     const extWindows = parseFloat(document.getElementById('est-extWindows').value) || 0;
     const extWindowsHours = extWindows * 4;
     totalHours += extWindowsHours;
-    document.getElementById('est-extWindowsHours').textContent = extWindowsHours.toFixed(1) + 'h';
+    estShowSubstrate('est-extWindowsHours', extWindowsHours, extWindowsHours * HOURLY_RATE);
 
     const extDoors = parseFloat(document.getElementById('est-extDoors').value) || 0;
     const extDoorsHours = extDoors * 8;
     totalHours += extDoorsHours;
-    document.getElementById('est-extDoorsHours').textContent = extDoorsHours.toFixed(1) + 'h';
+    estShowSubstrate('est-extDoorsHours', extDoorsHours, extDoorsHours * HOURLY_RATE);
 
     const extPosts = parseFloat(document.getElementById('est-extPosts').value) || 0;
     const extPostsRate = parseFloat(document.getElementById('est-extPostsRate').value);
     const extPostsHours = extPosts * extPostsRate;
     totalHours += extPostsHours;
-    document.getElementById('est-extPostsHours').textContent = extPostsHours.toFixed(1) + 'h';
+    estShowSubstrate('est-extPostsHours', extPostsHours, extPostsHours * HOURLY_RATE);
 
     const logs = parseFloat(document.getElementById('est-extLogs').value) || 0;
     const logsRate = parseFloat(document.getElementById('est-extLogsRate').value);
     const logsHours = logs / logsRate;
     totalHours += logsHours;
-    document.getElementById('est-extLogsHours').textContent = logsHours.toFixed(1) + 'h';
+    estShowSubstrate('est-extLogsHours', logsHours, logsHours * HOURLY_RATE);
 
     const metal = parseFloat(document.getElementById('est-extMetal').value) || 0;
     totalHours += metal;
-    document.getElementById('est-extMetalHours').textContent = metal.toFixed(1) + 'h';
+    estShowSubstrate('est-extMetalHours', metal, metal * HOURLY_RATE);
 
     const garage = parseFloat(document.getElementById('est-extGarage').value) || 0;
     const garageHours = garage * 12;
     totalHours += garageHours;
-    document.getElementById('est-extGarageHours').textContent = garageHours.toFixed(1) + 'h';
+    estShowSubstrate('est-extGarageHours', garageHours, garageHours * HOURLY_RATE);
 
     const furniture = parseFloat(document.getElementById('est-extFurniture').value) || 0;
     const furnitureRate = parseFloat(document.getElementById('est-extFurnitureRate').value);
     const furnitureHours = furniture * furnitureRate;
     totalHours += furnitureHours;
-    document.getElementById('est-extFurnitureHours').textContent = furnitureHours.toFixed(1) + 'h';
+    estShowSubstrate('est-extFurnitureHours', furnitureHours, furnitureHours * HOURLY_RATE);
 
     const deck = parseFloat(document.getElementById('est-extDeck').value) || 0;
     const deckHours = (deck / 100) * 3;
     totalHours += deckHours;
-    document.getElementById('est-extDeckHours').textContent = deckHours.toFixed(1) + 'h';
+    estShowSubstrate('est-extDeckHours', deckHours, deckHours * HOURLY_RATE);
 
     const stairs = parseFloat(document.getElementById('est-extStairs').value) || 0;
     const stairsHours = stairs * 0.5;
     totalHours += stairsHours;
-    document.getElementById('est-extStairsHours').textContent = stairsHours.toFixed(1) + 'h';
+    estShowSubstrate('est-extStairsHours', stairsHours, stairsHours * HOURLY_RATE);
 
     // Railings - input is total linear ft, divide by 10 to get units
     const railings = parseFloat(document.getElementById('est-extRailings').value) || 0;
     const railingsRate = parseFloat(document.getElementById('est-extRailingsRate').value);
     const railingsHours = (railings / 10) * railingsRate;
     totalHours += railingsHours;
-    document.getElementById('est-extRailingsHours').textContent = railingsHours.toFixed(1) + 'h';
+    estShowSubstrate('est-extRailingsHours', railingsHours, railingsHours * HOURLY_RATE);
 
     const joists = parseFloat(document.getElementById('est-extJoists').value) || 0;
     const joistsRate = parseFloat(document.getElementById('est-extJoistsRate').value);
     const joistsHours = joists * joistsRate;
     totalHours += joistsHours;
-    document.getElementById('est-extJoistsHours').textContent = joistsHours.toFixed(1) + 'h';
+    estShowSubstrate('est-extJoistsHours', joistsHours, joistsHours * HOURLY_RATE);
 
     const rafters = parseFloat(document.getElementById('est-extRafters').value) || 0;
     const raftersHours = rafters * 0.5;
     totalHours += raftersHours;
-    document.getElementById('est-extRaftersHours').textContent = raftersHours.toFixed(1) + 'h';
+    estShowSubstrate('est-extRaftersHours', raftersHours, raftersHours * HOURLY_RATE);
 
     const fence = parseFloat(document.getElementById('est-extFence').value) || 0;
     totalHours += fence;
-    document.getElementById('est-extFenceHours').textContent = fence.toFixed(1) + 'h';
+    estShowSubstrate('est-extFenceHours', fence, fence * HOURLY_RATE);
 
     const chinking = parseFloat(document.getElementById('est-extChinking').value) || 0;
     const chinkingHours = chinking / 10;
     totalHours += chinkingHours;
-    document.getElementById('est-extChinkingHours').textContent = chinkingHours.toFixed(1) + 'h';
+    estShowSubstrate('est-extChinkingHours', chinkingHours, chinkingHours * HOURLY_RATE);
 
     // Apply condition multipliers
     const multipliers = {
@@ -1944,7 +2035,7 @@ function estCalculate() {
     const adjustedHours = totalHours * (1 + adjustmentFactor);
 
     const laborDays = Math.ceil(adjustedHours / 8 * 2) / 2;
-    const totalValue = laborDays * 450;
+    const totalValue = laborDays * DAY_RATE;
 
     // Material cost estimate
     const materialCost = Math.round(totalValue * estMaterialPct);
@@ -1979,7 +2070,7 @@ function estSaveEstimate() {
         notes: document.getElementById('est-jobNotes').value,
         totalHours: parseFloat(document.getElementById('est-totalHours').textContent),
         laborDays: parseFloat(document.getElementById('est-laborDays').textContent),
-        totalValue: parseFloat(document.getElementById('est-laborDays').textContent) * 450
+        totalValue: parseFloat(document.getElementById('est-laborDays').textContent) * DAY_RATE
     };
 
     const isInterior = !document.getElementById('est-interiorSection').classList.contains('hidden');

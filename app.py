@@ -110,6 +110,18 @@ def save_inquiry():
         return jsonify({"success": False, "error": str(e)}), 500
 
 
+# ── API: Customer Inquiries (GET) ──────────────────────────────────────
+@app.route("/api/inquiries", methods=["GET"])
+def get_inquiries():
+    try:
+        spreadsheet = get_sheet()
+        ws = get_or_create_worksheet(spreadsheet, TAB_INQUIRIES, INQUIRY_HEADERS)
+        records = ws.get_all_records()
+        return jsonify({"success": True, "inquiries": records})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
 # ── API: Estimates ──────────────────────────────────────────────────────────
 @app.route("/api/estimate", methods=["POST"])
 def save_estimate():
