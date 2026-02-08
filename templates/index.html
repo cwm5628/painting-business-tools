@@ -453,6 +453,17 @@
             align-items: center;
         }
 
+        .product-tag {
+            font-size: 10px;
+            padding: 1px 6px;
+            border-radius: 4px;
+            display: none;
+            background: var(--secondary);
+            color: white;
+            font-weight: 600;
+            margin-top: 2px;
+        }
+
         .condition-selector {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -1382,6 +1393,10 @@
             <span class="est-summary-label">Materials</span>
             <span class="est-summary-value" style="color: var(--warning);" id="est-summaryMaterials">$0</span>
         </div>
+        <div class="est-summary-row">
+            <span class="est-summary-label">TOTAL JOB COST</span>
+            <span class="est-summary-value highlight" id="est-totalJobCost" style="font-size: 20px;">$0</span>
+        </div>
         <button class="save-btn" id="est-saveBtn" onclick="estSaveEstimate()">Save Estimate</button>
     </div>
 </div>
@@ -2116,19 +2131,23 @@ function estCalculate() {
     totalHours += chinkingHours;
     estShowSubstrate('est-extChinkingHours', chinkingHours, chinkingHours * HOURLY_RATE);
 
-    // Apply condition multipliers
-    const multipliers = {
-        prep: [1.0, 1.15, 1.3, 1.5],
-        furniture: [1.0, 1.1, 1.2, 1.35],
-        ladder: [1.0, 1.05, 1.15, 1.25, 1.4]
-    };
+    // ── Condition Multipliers ──────────────────────────────────
+    // Prep: 0%/5%/10%/15% — only on specific exterior substrates
+    const prepEligibleHours = sidingHours + fasciaHours + soffitHours
+        + windowTrimHours + doorTrimHours + cornerHours + bellyHours
+        + deckHours + railingsHours + stairsHours;
+    const nonPrepHours = totalHours - prepEligibleHours;
 
-    const prepMult = multipliers.prep[estConditions.prep];
-    const furnMult = multipliers.furniture[estConditions.furniture];
-    const ladderMult = multipliers.ladder[estConditions.ladder];
+    const prepMult = [1.0, 1.05, 1.10, 1.15][estConditions.prep];
+    const afterPrep = (prepEligibleHours * prepMult) + nonPrepHours;
 
-    const adjustmentFactor = (prepMult - 1) + (furnMult - 1) + (ladderMult - 1);
-    const adjustedHours = totalHours * (1 + adjustmentFactor);
+    // Furniture: applied to all hours
+    const furnMult = [1.0, 1.1, 1.2, 1.35][estConditions.furniture];
+    // Ladder: only 40ft (index 3) = 5%, all others 0%
+    const ladderMult = [1.0, 1.0, 1.0, 1.05, 1.0][estConditions.ladder];
+
+    const afterFurnLadder = afterPrep * furnMult * ladderMult;
+    const adjustedHours = afterFurnLadder;
 
     // Power wash hours (not affected by condition multipliers)
     const powerWashHours = estPowerWash * 8;
@@ -2147,12 +2166,14 @@ function estCalculate() {
 
     // Material cost estimate
     const materialCost = Math.round(totalValue * estMaterialPct);
+    const totalJobCost = totalValue + materialCost;
 
     document.getElementById('est-totalHours').textContent = totalWithPW.toFixed(1);
     document.getElementById('est-laborDays').textContent = laborDays.toFixed(1);
     document.getElementById('est-totalValue').textContent = '$' + totalValue.toLocaleString();
     document.getElementById('est-materialValue').textContent = '$' + materialCost.toLocaleString();
     document.getElementById('est-summaryMaterials').textContent = '$' + materialCost.toLocaleString();
+    document.getElementById('est-totalJobCost').textContent = '$' + totalJobCost.toLocaleString();
 }
 
 function estSaveEstimate() {
@@ -2231,7 +2252,14 @@ function estInitSubstrateControls() {
 
 function estInjectControls(item, name, options) {
     const inputDiv = item.querySelector('.substrate-input');
+    const labelDiv = item.querySelector('.substrate-label');
     const key = name.replace(/[\/\s]/g, '');
+
+    // Product tag (visible badge in label area)
+    var tag = document.createElement('span');
+    tag.className = 'product-tag';
+    tag.id = 'est-ptag-' + key;
+    labelDiv.appendChild(tag);
 
     const meta = document.createElement('div');
     meta.className = 'substrate-meta';
@@ -2239,10 +2267,31 @@ function estInjectControls(item, name, options) {
     // Product select
     const sel = document.createElement('select');
     sel.className = 'product-select';
+    sel.setAttribute('data-key', key);
     sel.innerHTML = '<option value="">Product</option>' +
         options.map(function(o) { return '<option value="' + o + '">' + o + '</option>'; }).join('');
     sel.onchange = function() {
-        estSubstrateProducts[key] = this.value;
+        var newVal = this.value;
+        // Validate group product match
+        if (newVal && !estValidateGroupProduct(key, newVal)) {
+            this.value = estSubstrateProducts[key] || '';
+            return;
+        }
+        estSubstrateProducts[key] = newVal;
+        var ptag = document.getElementById('est-ptag-' + key);
+        if (newVal) {
+            ptag.textContent = newVal;
+            ptag.style.display = 'inline-block';
+            // Use group color if in a group
+            var grp = estSubstrateGroups[key];
+            if (grp) {
+                ptag.style.background = GROUP_COLORS[grp];
+            } else {
+                ptag.style.background = 'var(--secondary)';
+            }
+        } else {
+            ptag.style.display = 'none';
+        }
         estUpdateGroupSummary();
     };
     meta.appendChild(sel);
@@ -2262,7 +2311,13 @@ function estInjectControls(item, name, options) {
                 btn.style.color = '';
                 btn.style.borderColor = '';
                 item.style.borderLeft = '';
+                // Reset tag color
+                var ptag = document.getElementById('est-ptag-' + key);
+                if (ptag && ptag.style.display !== 'none') ptag.style.background = 'var(--secondary)';
             } else {
+                // Validate product match with group
+                var myProduct = estSubstrateProducts[key] || '';
+                if (myProduct && !estValidateGroupProduct(key, myProduct, g)) return;
                 groupDiv.querySelectorAll('.group-btn').forEach(function(b) {
                     b.style.background = '';
                     b.style.color = '';
@@ -2273,6 +2328,9 @@ function estInjectControls(item, name, options) {
                 btn.style.color = 'white';
                 btn.style.borderColor = GROUP_COLORS[g];
                 item.style.borderLeft = '4px solid ' + GROUP_COLORS[g];
+                // Update tag color to group color
+                var ptag = document.getElementById('est-ptag-' + key);
+                if (ptag && ptag.style.display !== 'none') ptag.style.background = GROUP_COLORS[g];
             }
             estUpdateGroupSummary();
         };
@@ -2281,6 +2339,21 @@ function estInjectControls(item, name, options) {
     meta.appendChild(groupDiv);
 
     inputDiv.appendChild(meta);
+}
+
+function estValidateGroupProduct(key, product, targetGroup) {
+    var group = targetGroup || estSubstrateGroups[key];
+    if (!group || !product) return true;
+    for (var other in estSubstrateGroups) {
+        if (other !== key && estSubstrateGroups[other] === group) {
+            var otherProduct = estSubstrateProducts[other] || '';
+            if (otherProduct && otherProduct !== product) {
+                alert('Product mismatch in Group ' + group + '!\n\n"' + other + '" is already set to "' + otherProduct + '".\n\nAll substrates in the same group must use the same product.');
+                return false;
+            }
+        }
+    }
+    return true;
 }
 
 function estUpdateGroupSummary() {
