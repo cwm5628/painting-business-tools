@@ -395,6 +395,64 @@
             background: var(--success);
         }
 
+        .substrate-meta {
+            display: flex;
+            gap: 4px;
+            margin-top: 4px;
+            align-items: center;
+        }
+
+        .product-select {
+            flex: 1;
+            padding: 5px 4px;
+            font-size: 11px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-dim);
+            font-family: inherit;
+            min-width: 0;
+        }
+
+        .group-btns {
+            display: flex;
+            gap: 2px;
+            flex-shrink: 0;
+        }
+
+        .group-btn {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 1px solid var(--border);
+            background: var(--surface-light);
+            color: var(--text-dim);
+            font-size: 9px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            transition: all 0.15s;
+        }
+
+        .power-wash-line {
+            display: none;
+            background: var(--surface);
+            border: 2px solid var(--warning);
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+        }
+
+        .power-wash-line.visible {
+            display: grid;
+            grid-template-columns: 1fr 100px 100px;
+            gap: 8px;
+            align-items: center;
+        }
+
         .condition-selector {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -863,8 +921,11 @@
         <div class="section">
             <div class="input-group">
                 <label>Job Address</label>
-                <input type="text" id="est-jobAddress" placeholder="123 Main St" list="est-addressList" oninput="estCheckAddress()">
-                <datalist id="est-addressList"></datalist>
+                <select id="est-jobAddress" onchange="estCheckAddress()">
+                    <option value="">-- Select Address --</option>
+                    <option value="__manual__">Enter Manually...</option>
+                </select>
+                <input type="text" id="est-jobAddressManual" placeholder="Type address here" style="display: none; margin-top: 8px;">
             </div>
             <div class="input-group" style="margin-top: 12px;">
                 <label>Customer Name <span style="font-size: 11px; color: var(--success); text-transform: none;">(auto-fills from intake)</span></label>
@@ -889,10 +950,11 @@
         <div class="section">
             <div class="section-title">Job Conditions</div>
 
-            <label style="display: block; margin-bottom: 8px; font-size: 14px; font-weight: 600;">Power Wash</label>
-            <div class="condition-selector" style="grid-template-columns: repeat(2, 1fr);">
-                <button class="condition-btn" onclick="estSetPowerWash(this, true)">Yes</button>
-                <button class="condition-btn active" onclick="estSetPowerWash(this, false)">No</button>
+            <label style="display: block; margin-bottom: 8px; font-size: 14px; font-weight: 600;">Power Wash (days)</label>
+            <div class="condition-selector" style="grid-template-columns: repeat(3, 1fr);">
+                <button class="condition-btn active" onclick="estSetPowerWash(this, 0)">No</button>
+                <button class="condition-btn" onclick="estSetPowerWash(this, 1)">1</button>
+                <button class="condition-btn" onclick="estSetPowerWash(this, 2)">2</button>
             </div>
 
             <label style="display: block; margin: 16px 0 8px 0; font-size: 14px; font-weight: 600;">Prep Condition</label>
@@ -927,6 +989,13 @@
         <div class="toggle-section">
             <button class="toggle-btn active" onclick="estToggleJobType('interior')">Interior</button>
             <button class="toggle-btn" onclick="estToggleJobType('exterior')">Exterior</button>
+        </div>
+
+        <!-- Power Wash Line (shows when PW selected) -->
+        <div class="power-wash-line" id="est-powerWashLine">
+            <div class="substrate-label"><span class="substrate-name" style="color: var(--warning);">Power Wash</span><span class="substrate-unit" id="est-powerWashDaysLabel">0 days</span></div>
+            <div></div>
+            <div class="substrate-hours" id="est-powerWashHours">0h</div>
         </div>
 
         <!-- INTERIOR SECTION -->
@@ -1047,6 +1116,8 @@
                     </div>
                     <div class="substrate-hours" id="est-intPostsHours">0h</div>
                 </div>
+
+                <div id="est-intGroupSummary" style="margin-top: 12px;"></div>
             </div>
         </div>
 
@@ -1228,6 +1299,8 @@
                     <div class="substrate-input"><input type="number" id="est-extChinking" placeholder="0" onchange="estCalculate()"></div>
                     <div class="substrate-hours" id="est-extChinkingHours">0h</div>
                 </div>
+
+                <div id="est-extGroupSummary" style="margin-top: 12px;"></div>
             </div>
         </div>
 
@@ -1668,8 +1741,16 @@ const DAY_RATE = 480;
 let estConditions = { prep: 1, furniture: 1, ladder: 1 };
 let estSoffitCombined = false;
 let estMaterialPct = 0.15;
-let estPowerWash = false;
+let estPowerWash = 0;
 let estInquiryCache = null;
+let estSubstrateProducts = {};
+let estSubstrateGroups = {};
+const GROUP_COLORS = { A: '#FF4757', B: '#3498db', C: '#00C896', D: '#FFB627', E: '#9b59b6' };
+const PRODUCT_TYPES = {
+    exterior: ['Transparent', 'Semi-Trans', 'Semi-Solid', 'Solid', 'Paint', 'Clear'],
+    interiorBody: ['Flat', 'Matte', 'Eggshell', 'Satin', 'Semi-Gloss'],
+    interiorTrim: ['Satin', 'Semi-Gloss', 'Gloss']
+};
 
 function estShowSubstrate(id, hours, dollars) {
     const el = document.getElementById(id);
@@ -1680,20 +1761,21 @@ function estShowSubstrate(id, hours, dollars) {
     }
 }
 
-function estSetPowerWash(btn, value) {
-    estPowerWash = value;
+function estSetPowerWash(btn, days) {
+    estPowerWash = days;
     const buttons = btn.parentElement.querySelectorAll('.condition-btn');
     buttons.forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     const washerCheckbox = document.getElementById('est-toolWasher');
     const washerItem = washerCheckbox.closest('.checkbox-item');
-    if (value && !washerCheckbox.checked) {
+    if (days > 0 && !washerCheckbox.checked) {
         washerCheckbox.checked = true;
         washerItem.classList.add('checked');
-    } else if (!value && washerCheckbox.checked) {
+    } else if (days === 0 && washerCheckbox.checked) {
         washerCheckbox.checked = false;
         washerItem.classList.remove('checked');
     }
+    estCalculate();
 }
 
 function estToggleJobType(type) {
@@ -1748,85 +1830,99 @@ function estSetMaterialRate(btn, rate) {
 }
 
 function estPopulateAddressList() {
-    // Load jobs if not cached, then populate datalist
-    if (!jobsCache.data) {
-        fetch('/api/jobs').then(r => r.json()).then(data => {
-            if (data.success) {
-                jobsCache.data = data.jobs.map((job, i) => ({ ...job, rowIndex: i + 2 }));
-                jobsCache.timestamp = Date.now();
-                fillAddressDatalist();
+    // Fetch inquiries and populate address dropdown
+    const doPopulate = function(inquiries) {
+        const sel = document.getElementById('est-jobAddress');
+        const currentVal = sel.value;
+        // Clear all but first two options (placeholder + manual)
+        while (sel.options.length > 2) sel.remove(2);
+        const seen = new Set();
+        inquiries.forEach(inq => {
+            const addr = inq['Address'] || '';
+            if (addr && !seen.has(addr)) {
+                seen.add(addr);
+                const opt = document.createElement('option');
+                opt.value = addr;
+                opt.textContent = addr;
+                sel.insertBefore(opt, sel.options[sel.options.length - 1]); // before "Enter Manually"
             }
-        }).catch(() => {});
-    } else {
-        fillAddressDatalist();
-    }
-}
-
-function fillAddressDatalist() {
-    const dl = document.getElementById('est-addressList');
-    dl.innerHTML = '';
-    if (!jobsCache.data) return;
-    const seen = new Set();
-    jobsCache.data.forEach(job => {
-        const addr = job['Address'] || '';
-        if (addr && !seen.has(addr)) {
-            seen.add(addr);
-            const opt = document.createElement('option');
-            opt.value = addr;
-            dl.appendChild(opt);
-        }
-    });
-}
-
-function estCheckAddress() {
-    if (!jobsCache.data) return;
-    const addr = document.getElementById('est-jobAddress').value;
-    const match = jobsCache.data.find(j => j['Address'] === addr);
-    if (match && match['Customer Name']) {
-        document.getElementById('est-customerName').value = match['Customer Name'];
-    }
-    // Fetch and display intake form data for this address
-    estFetchInquiryData(addr);
-}
-
-function estFetchInquiryData(addr) {
-    if (!addr) {
-        document.getElementById('est-intakeInfo').style.display = 'none';
-        return;
-    }
-    const doLookup = function(inquiries) {
-        const match = inquiries.find(i => (i['Address'] || '') === addr);
-        const infoDiv = document.getElementById('est-intakeInfo');
-        const detailsDiv = document.getElementById('est-intakeDetails');
-        if (match) {
-            let html = '';
-            const jobTypes = match['Job Types'] || '';
-            const timeline = match['Timeline'] || '';
-            const lastPainted = match['Last Painted'] || '';
-            const prevCustomer = match['Previous Customer'] || '';
-            const notes = match['Notes'] || '';
-            const missing = '<span style="color: var(--danger);">Not answered</span>';
-            if (jobTypes) html += '<div><strong>Job Types:</strong> ' + escapeHtml(jobTypes) + '</div>';
-            html += '<div><strong>Timeline:</strong> ' + (timeline ? escapeHtml(timeline) : missing) + '</div>';
-            html += '<div><strong>Last Painted:</strong> ' + (lastPainted ? escapeHtml(lastPainted) : missing) + '</div>';
-            html += '<div><strong>Previous Customer:</strong> ' + (prevCustomer ? escapeHtml(prevCustomer) : missing) + '</div>';
-            html += '<div><strong>Notes:</strong> ' + (notes ? escapeHtml(notes) : missing) + '</div>';
-            detailsDiv.innerHTML = html;
-            infoDiv.style.display = 'block';
-        } else {
-            infoDiv.style.display = 'none';
-        }
+        });
+        if (currentVal) sel.value = currentVal;
     };
     if (estInquiryCache) {
-        doLookup(estInquiryCache);
+        doPopulate(estInquiryCache);
     } else {
         fetch('/api/inquiries').then(r => r.json()).then(data => {
             if (data.success) {
                 estInquiryCache = data.inquiries;
-                doLookup(estInquiryCache);
+                doPopulate(estInquiryCache);
             }
         }).catch(function() {});
     }
+}
+
+function estCheckAddress() {
+    const sel = document.getElementById('est-jobAddress');
+    const manualInput = document.getElementById('est-jobAddressManual');
+    if (sel.value === '__manual__') {
+        manualInput.style.display = 'block';
+        manualInput.focus();
+        document.getElementById('est-intakeInfo').style.display = 'none';
+        return;
+    }
+    manualInput.style.display = 'none';
+    const addr = sel.value;
+    if (!addr) {
+        document.getElementById('est-intakeInfo').style.display = 'none';
+        return;
+    }
+    // Look up inquiry data for this address
+    if (estInquiryCache) {
+        estShowInquiryData(addr);
+    } else {
+        fetch('/api/inquiries').then(r => r.json()).then(data => {
+            if (data.success) {
+                estInquiryCache = data.inquiries;
+                estShowInquiryData(addr);
+            }
+        }).catch(function() {});
+    }
+}
+
+function estShowInquiryData(addr) {
+    if (!estInquiryCache || !addr) return;
+    const match = estInquiryCache.find(i => (i['Address'] || '') === addr);
+    const infoDiv = document.getElementById('est-intakeInfo');
+    const detailsDiv = document.getElementById('est-intakeDetails');
+    if (match) {
+        if (match['Customer Name']) {
+            document.getElementById('est-customerName').value = match['Customer Name'];
+        }
+        let html = '';
+        const jobTypes = match['Job Types'] || '';
+        const timeline = match['Timeline'] || '';
+        const lastPainted = match['Last Painted'] || '';
+        const prevCustomer = match['Previous Customer'] || '';
+        const notes = match['Notes'] || '';
+        const missing = '<span style="color: var(--danger);">Not answered</span>';
+        if (jobTypes) html += '<div><strong>Job Types:</strong> ' + escapeHtml(jobTypes) + '</div>';
+        html += '<div><strong>Timeline:</strong> ' + (timeline ? escapeHtml(timeline) : missing) + '</div>';
+        html += '<div><strong>Last Painted:</strong> ' + (lastPainted ? escapeHtml(lastPainted) : missing) + '</div>';
+        html += '<div><strong>Previous Customer:</strong> ' + (prevCustomer ? escapeHtml(prevCustomer) : missing) + '</div>';
+        html += '<div><strong>Notes:</strong> ' + (notes ? escapeHtml(notes) : missing) + '</div>';
+        detailsDiv.innerHTML = html;
+        infoDiv.style.display = 'block';
+    } else {
+        infoDiv.style.display = 'none';
+    }
+}
+
+function estGetAddress() {
+    const sel = document.getElementById('est-jobAddress');
+    if (sel.value === '__manual__') {
+        return document.getElementById('est-jobAddressManual').value;
+    }
+    return sel.value;
 }
 
 function estCalculate() {
@@ -2034,13 +2130,25 @@ function estCalculate() {
     const adjustmentFactor = (prepMult - 1) + (furnMult - 1) + (ladderMult - 1);
     const adjustedHours = totalHours * (1 + adjustmentFactor);
 
-    const laborDays = Math.ceil(adjustedHours / 8 * 2) / 2;
+    // Power wash hours (not affected by condition multipliers)
+    const powerWashHours = estPowerWash * 8;
+    const pwLine = document.getElementById('est-powerWashLine');
+    if (powerWashHours > 0) {
+        pwLine.classList.add('visible');
+        estShowSubstrate('est-powerWashHours', powerWashHours, powerWashHours * HOURLY_RATE);
+        document.getElementById('est-powerWashDaysLabel').textContent = estPowerWash + (estPowerWash === 1 ? ' day' : ' days');
+    } else {
+        pwLine.classList.remove('visible');
+    }
+
+    const totalWithPW = adjustedHours + powerWashHours;
+    const laborDays = Math.ceil(totalWithPW / 8 * 2) / 2;
     const totalValue = laborDays * DAY_RATE;
 
     // Material cost estimate
     const materialCost = Math.round(totalValue * estMaterialPct);
 
-    document.getElementById('est-totalHours').textContent = adjustedHours.toFixed(1);
+    document.getElementById('est-totalHours').textContent = totalWithPW.toFixed(1);
     document.getElementById('est-laborDays').textContent = laborDays.toFixed(1);
     document.getElementById('est-totalValue').textContent = '$' + totalValue.toLocaleString();
     document.getElementById('est-materialValue').textContent = '$' + materialCost.toLocaleString();
@@ -2056,7 +2164,7 @@ function estSaveEstimate() {
     });
 
     const estimate = {
-        jobAddress: document.getElementById('est-jobAddress').value,
+        jobAddress: estGetAddress(),
         customerName: document.getElementById('est-customerName').value,
         estimator: document.getElementById('est-estimator').value,
         date: new Date().toLocaleDateString(),
@@ -2105,7 +2213,102 @@ function estSaveEstimate() {
     });
 }
 
+// ── Product Type & Color Group Controls ──────────────────────────────
+function estInitSubstrateControls() {
+    const interiorBodyNames = ['Walls', 'Ceilings', 'Closets'];
+
+    document.querySelectorAll('#est-interiorSection .substrate-item').forEach(function(item) {
+        const name = item.querySelector('.substrate-name').textContent;
+        const isBody = interiorBodyNames.includes(name);
+        estInjectControls(item, name, isBody ? PRODUCT_TYPES.interiorBody : PRODUCT_TYPES.interiorTrim);
+    });
+
+    document.querySelectorAll('#est-exteriorSection .substrate-item').forEach(function(item) {
+        const name = item.querySelector('.substrate-name').textContent;
+        estInjectControls(item, name, PRODUCT_TYPES.exterior);
+    });
+}
+
+function estInjectControls(item, name, options) {
+    const inputDiv = item.querySelector('.substrate-input');
+    const key = name.replace(/[\/\s]/g, '');
+
+    const meta = document.createElement('div');
+    meta.className = 'substrate-meta';
+
+    // Product select
+    const sel = document.createElement('select');
+    sel.className = 'product-select';
+    sel.innerHTML = '<option value="">Product</option>' +
+        options.map(function(o) { return '<option value="' + o + '">' + o + '</option>'; }).join('');
+    sel.onchange = function() {
+        estSubstrateProducts[key] = this.value;
+        estUpdateGroupSummary();
+    };
+    meta.appendChild(sel);
+
+    // Group buttons
+    var groupDiv = document.createElement('div');
+    groupDiv.className = 'group-btns';
+    ['A', 'B', 'C', 'D', 'E'].forEach(function(g) {
+        var btn = document.createElement('button');
+        btn.className = 'group-btn';
+        btn.textContent = g;
+        btn.type = 'button';
+        btn.onclick = function() {
+            if (estSubstrateGroups[key] === g) {
+                delete estSubstrateGroups[key];
+                btn.style.background = '';
+                btn.style.color = '';
+                btn.style.borderColor = '';
+                item.style.borderLeft = '';
+            } else {
+                groupDiv.querySelectorAll('.group-btn').forEach(function(b) {
+                    b.style.background = '';
+                    b.style.color = '';
+                    b.style.borderColor = '';
+                });
+                estSubstrateGroups[key] = g;
+                btn.style.background = GROUP_COLORS[g];
+                btn.style.color = 'white';
+                btn.style.borderColor = GROUP_COLORS[g];
+                item.style.borderLeft = '4px solid ' + GROUP_COLORS[g];
+            }
+            estUpdateGroupSummary();
+        };
+        groupDiv.appendChild(btn);
+    });
+    meta.appendChild(groupDiv);
+
+    inputDiv.appendChild(meta);
+}
+
+function estUpdateGroupSummary() {
+    var groups = {};
+    for (var substrate in estSubstrateGroups) {
+        var g = estSubstrateGroups[substrate];
+        if (!groups[g]) groups[g] = [];
+        var product = estSubstrateProducts[substrate] || '';
+        groups[g].push(substrate + (product ? ' (' + product + ')' : ''));
+    }
+    var html = '';
+    ['A', 'B', 'C', 'D', 'E'].forEach(function(g) {
+        if (groups[g] && groups[g].length > 0) {
+            html += '<div style="margin-bottom: 8px; padding: 8px 12px; border-left: 4px solid ' + GROUP_COLORS[g] + '; background: var(--surface-light); border-radius: 0 8px 8px 0; font-size: 13px;">';
+            html += '<strong style="color: ' + GROUP_COLORS[g] + ';">Group ' + g + ':</strong> ';
+            html += groups[g].join(', ');
+            if (groups[g].length > 1) html += ' <span style="color: var(--success); font-size: 11px;">&mdash; same product</span>';
+            html += '</div>';
+        }
+    });
+    var intSummary = document.getElementById('est-intGroupSummary');
+    var extSummary = document.getElementById('est-extGroupSummary');
+    if (intSummary) intSummary.innerHTML = html;
+    if (extSummary) extSummary.innerHTML = html;
+}
+
 // Initialize estimate
+estInitSubstrateControls();
 estCalculate();
 
 
