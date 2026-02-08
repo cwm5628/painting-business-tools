@@ -863,10 +863,11 @@
         <div class="section">
             <div class="input-group">
                 <label>Job Address</label>
-                <input type="text" id="est-jobAddress" placeholder="123 Main St">
+                <input type="text" id="est-jobAddress" placeholder="123 Main St" list="est-addressList" oninput="estCheckAddress()">
+                <datalist id="est-addressList"></datalist>
             </div>
             <div class="input-group" style="margin-top: 12px;">
-                <label>Customer Name</label>
+                <label>Customer Name <span style="font-size: 11px; color: var(--success); text-transform: none;">(auto-fills from intake)</span></label>
                 <input type="text" id="est-customerName" placeholder="John Smith">
             </div>
             <div class="input-group" style="margin-top: 12px;">
@@ -916,24 +917,24 @@
                 </div>
 
                 <div class="substrate-item">
-                    <div class="substrate-label"><span class="substrate-name">Baseboard</span><span class="substrate-unit">per 10 linear ft</span></div>
+                    <div class="substrate-label"><span class="substrate-name">Baseboard</span><span class="substrate-unit">linear ft</span></div>
                     <div class="substrate-input">
                         <input type="number" id="est-intBaseboard" placeholder="0" onchange="estCalculate()">
                         <select id="est-intBaseboardRate" onchange="estCalculate()">
-                            <option value="1">1hr Standard</option>
-                            <option value="1.5">1.5hr Difficult</option>
+                            <option value="1">1hr/10lf Standard</option>
+                            <option value="1.5">1.5hr/10lf Difficult</option>
                         </select>
                     </div>
                     <div class="substrate-hours" id="est-intBaseboardHours">0h</div>
                 </div>
 
                 <div class="substrate-item">
-                    <div class="substrate-label"><span class="substrate-name">Casement/Trim</span><span class="substrate-unit">per 10 linear ft</span></div>
+                    <div class="substrate-label"><span class="substrate-name">Casement/Trim</span><span class="substrate-unit">linear ft</span></div>
                     <div class="substrate-input">
                         <input type="number" id="est-intCasement" placeholder="0" onchange="estCalculate()">
                         <select id="est-intCasementRate" onchange="estCalculate()">
-                            <option value="1">1hr Standard</option>
-                            <option value="1.5">1.5hr Difficult</option>
+                            <option value="1">1hr/10lf Standard</option>
+                            <option value="1.5">1.5hr/10lf Difficult</option>
                         </select>
                     </div>
                     <div class="substrate-hours" id="est-intCasementHours">0h</div>
@@ -1017,15 +1018,43 @@
                 </div>
 
                 <div class="substrate-item">
-                    <div class="substrate-label"><span class="substrate-name">Trim</span><span class="substrate-unit">count</span></div>
+                    <div class="substrate-label"><span class="substrate-name">Fascia</span><span class="substrate-unit">linear ft</span></div>
                     <div class="substrate-input">
-                        <input type="number" id="est-extTrim" placeholder="0" onchange="estCalculate()">
-                        <select id="est-extTrimRate" onchange="estCalculate()">
-                            <option value="1">Window 1hr</option>
-                            <option value="1.33">Door 80min</option>
+                        <input type="number" id="est-extFascia" placeholder="0" onchange="estCalculate()">
+                        <select id="est-extFasciaRate" onchange="estCalculate()">
+                            <option value="1">1hr/10lf Standard</option>
+                            <option value="2">2hr/10lf Large</option>
+                            <option value="3">3hr/10lf Difficult</option>
                         </select>
                     </div>
-                    <div class="substrate-hours" id="est-extTrimHours">0h</div>
+                    <div class="substrate-hours" id="est-extFasciaHours">0h</div>
+                </div>
+
+                <div class="substrate-item">
+                    <div class="substrate-label"><span class="substrate-name">Soffit</span><span class="substrate-unit">linear ft</span></div>
+                    <div class="substrate-input">
+                        <input type="number" id="est-extSoffit" placeholder="0" onchange="estCalculate()">
+                        <select id="est-extSoffitRate" onchange="estCalculate()">
+                            <option value="1">1hr/10lf Small</option>
+                            <option value="2">2hr/10lf Medium</option>
+                            <option value="3">3hr/10lf Large</option>
+                            <option value="4">4hr/10lf Difficult</option>
+                        </select>
+                        <button class="combine-btn" id="est-combineSoffit" onclick="estToggleCombine()">Combine w/ Fascia (0 extra hrs)</button>
+                    </div>
+                    <div class="substrate-hours" id="est-extSoffitHours">0h</div>
+                </div>
+
+                <div class="substrate-item">
+                    <div class="substrate-label"><span class="substrate-name">Window Trim</span><span class="substrate-unit">count</span></div>
+                    <div class="substrate-input"><input type="number" id="est-extWindowTrim" placeholder="0" onchange="estCalculate()"></div>
+                    <div class="substrate-hours" id="est-extWindowTrimHours">0h</div>
+                </div>
+
+                <div class="substrate-item">
+                    <div class="substrate-label"><span class="substrate-name">Door Trim</span><span class="substrate-unit">count</span></div>
+                    <div class="substrate-input"><input type="number" id="est-extDoorTrim" placeholder="0" onchange="estCalculate()"></div>
+                    <div class="substrate-hours" id="est-extDoorTrimHours">0h</div>
                 </div>
 
                 <div class="substrate-item">
@@ -1050,34 +1079,6 @@
                     <div class="substrate-label"><span class="substrate-name">Doors</span><span class="substrate-unit">count</span></div>
                     <div class="substrate-input"><input type="number" id="est-extDoors" placeholder="0" onchange="estCalculate()"></div>
                     <div class="substrate-hours" id="est-extDoorsHours">0h</div>
-                </div>
-
-                <div class="substrate-item">
-                    <div class="substrate-label"><span class="substrate-name">Fascia</span><span class="substrate-unit">per 10 linear ft</span></div>
-                    <div class="substrate-input">
-                        <input type="number" id="est-extFascia" placeholder="0" onchange="estCalculate()">
-                        <select id="est-extFasciaRate" onchange="estCalculate()">
-                            <option value="1">1hr Standard</option>
-                            <option value="2">2hr Large</option>
-                            <option value="3">3hr Difficult</option>
-                        </select>
-                    </div>
-                    <div class="substrate-hours" id="est-extFasciaHours">0h</div>
-                </div>
-
-                <div class="substrate-item">
-                    <div class="substrate-label"><span class="substrate-name">Soffit</span><span class="substrate-unit">per 10 linear ft</span></div>
-                    <div class="substrate-input">
-                        <input type="number" id="est-extSoffit" placeholder="0" onchange="estCalculate()">
-                        <select id="est-extSoffitRate" onchange="estCalculate()">
-                            <option value="1">1hr Small</option>
-                            <option value="2">2hr Medium</option>
-                            <option value="3">3hr Large</option>
-                            <option value="4">4hr Difficult</option>
-                        </select>
-                        <button class="combine-btn" id="est-combineSoffit" onclick="estToggleCombine()">Combine w/ Fascia</button>
-                    </div>
-                    <div class="substrate-hours" id="est-extSoffitHours">0h</div>
                 </div>
 
                 <div class="substrate-item">
@@ -1141,14 +1142,14 @@
                 </div>
 
                 <div class="substrate-item">
-                    <div class="substrate-label"><span class="substrate-name">Railings</span><span class="substrate-unit">per 10 linear ft</span></div>
+                    <div class="substrate-label"><span class="substrate-name">Railings</span><span class="substrate-unit">linear ft</span></div>
                     <div class="substrate-input">
                         <input type="number" id="est-extRailings" placeholder="0" onchange="estCalculate()">
                         <select id="est-extRailingsRate" onchange="estCalculate()">
-                            <option value="1">1hr Small</option>
-                            <option value="2">2hr Medium</option>
-                            <option value="3">3hr Large</option>
-                            <option value="4">4hr Difficult</option>
+                            <option value="1">1hr/10lf Small</option>
+                            <option value="2">2hr/10lf Medium</option>
+                            <option value="3">3hr/10lf Large</option>
+                            <option value="4">4hr/10lf Difficult</option>
                         </select>
                     </div>
                     <div class="substrate-hours" id="est-extRailingsHours">0h</div>
@@ -1252,6 +1253,21 @@
             </div>
         </div>
 
+        <!-- MATERIAL COST ESTIMATE -->
+        <div class="section">
+            <div class="section-title">Material Cost Estimate</div>
+            <label style="display: block; margin-bottom: 8px; font-size: 14px; font-weight: 600;">Material % of Labor</label>
+            <div class="condition-selector" style="grid-template-columns: repeat(3, 1fr);">
+                <button class="condition-btn active" onclick="estSetMaterialRate(this, 0.15)">15%</button>
+                <button class="condition-btn" onclick="estSetMaterialRate(this, 0.175)">17.5%</button>
+                <button class="condition-btn" onclick="estSetMaterialRate(this, 0.18)">18%</button>
+            </div>
+            <div id="est-materialCost" style="margin-top: 16px; padding: 14px; background: var(--surface-light); border-radius: 12px; text-align: center;">
+                <span style="font-size: 13px; color: var(--text-dim);">Material Estimate</span><br>
+                <span style="font-size: 22px; font-weight: 700; font-family: 'JetBrains Mono', monospace; color: var(--warning);" id="est-materialValue">$0</span>
+            </div>
+        </div>
+
         <!-- NOTES -->
         <div class="section">
             <div class="input-group">
@@ -1276,6 +1292,10 @@
         <div class="est-summary-row">
             <span class="est-summary-label">ESTIMATED VALUE</span>
             <span class="est-summary-value highlight" id="est-totalValue">$0</span>
+        </div>
+        <div class="est-summary-row" style="border-top: none; padding-top: 0;">
+            <span class="est-summary-label">Materials</span>
+            <span class="est-summary-value" style="color: var(--warning);" id="est-summaryMaterials">$0</span>
         </div>
         <button class="save-btn" id="est-saveBtn" onclick="estSaveEstimate()">Save Estimate</button>
     </div>
@@ -1411,6 +1431,11 @@ function switchTab(tabName, btn) {
     // Load jobs data when switching to pipeline or active tabs
     if (tabName === 'pipeline' || tabName === 'active') {
         jobsLoadIfNeeded();
+    }
+
+    // Populate address autocomplete when switching to estimate tab
+    if (tabName === 'estimate') {
+        estPopulateAddressList();
     }
 
     // Scroll to top
@@ -1628,6 +1653,7 @@ document.getElementById('inq-form').addEventListener('submit', function(e) {
 // ════════════════════════════════════════════════════════════════════════
 let estConditions = { prep: 1, furniture: 1, ladder: 1 };
 let estSoffitCombined = false;
+let estMaterialPct = 0.15;
 
 function estToggleJobType(type) {
     const intSection = document.getElementById('est-interiorSection');
@@ -1668,8 +1694,56 @@ function estToggleCombine() {
     estSoffitCombined = !estSoffitCombined;
     const btn = document.getElementById('est-combineSoffit');
     btn.classList.toggle('active');
-    btn.textContent = estSoffitCombined ? '\u2713 Combined' : 'Combine w/ Fascia';
+    btn.textContent = estSoffitCombined ? '\u2713 Combined (0 extra hrs)' : 'Combine w/ Fascia (0 extra hrs)';
     estCalculate();
+}
+
+function estSetMaterialRate(btn, rate) {
+    estMaterialPct = rate;
+    const buttons = btn.parentElement.querySelectorAll('.condition-btn');
+    buttons.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    estCalculate();
+}
+
+function estPopulateAddressList() {
+    // Load jobs if not cached, then populate datalist
+    if (!jobsCache.data) {
+        fetch('/api/jobs').then(r => r.json()).then(data => {
+            if (data.success) {
+                jobsCache.data = data.jobs.map((job, i) => ({ ...job, rowIndex: i + 2 }));
+                jobsCache.timestamp = Date.now();
+                fillAddressDatalist();
+            }
+        }).catch(() => {});
+    } else {
+        fillAddressDatalist();
+    }
+}
+
+function fillAddressDatalist() {
+    const dl = document.getElementById('est-addressList');
+    dl.innerHTML = '';
+    if (!jobsCache.data) return;
+    const seen = new Set();
+    jobsCache.data.forEach(job => {
+        const addr = job['Address'] || '';
+        if (addr && !seen.has(addr)) {
+            seen.add(addr);
+            const opt = document.createElement('option');
+            opt.value = addr;
+            dl.appendChild(opt);
+        }
+    });
+}
+
+function estCheckAddress() {
+    if (!jobsCache.data) return;
+    const addr = document.getElementById('est-jobAddress').value;
+    const match = jobsCache.data.find(j => j['Address'] === addr);
+    if (match && match['Customer Name']) {
+        document.getElementById('est-customerName').value = match['Customer Name'];
+    }
 }
 
 function estCalculate() {
@@ -1688,15 +1762,17 @@ function estCalculate() {
     totalHours += ceilingsHours;
     document.getElementById('est-intCeilingsHours').textContent = ceilingsHours.toFixed(1) + 'h';
 
+    // Baseboard - input is total linear ft, divide by 10 to get units
     const baseboard = parseFloat(document.getElementById('est-intBaseboard').value) || 0;
     const baseboardRate = parseFloat(document.getElementById('est-intBaseboardRate').value);
-    const baseboardHours = baseboard * baseboardRate;
+    const baseboardHours = (baseboard / 10) * baseboardRate;
     totalHours += baseboardHours;
     document.getElementById('est-intBaseboardHours').textContent = baseboardHours.toFixed(1) + 'h';
 
+    // Casement - input is total linear ft, divide by 10 to get units
     const casement = parseFloat(document.getElementById('est-intCasement').value) || 0;
     const casementRate = parseFloat(document.getElementById('est-intCasementRate').value);
-    const casementHours = casement * casementRate;
+    const casementHours = (casement / 10) * casementRate;
     totalHours += casementHours;
     document.getElementById('est-intCasementHours').textContent = casementHours.toFixed(1) + 'h';
 
@@ -1742,11 +1818,32 @@ function estCalculate() {
     totalHours += sidingHours;
     document.getElementById('est-extSidingHours').textContent = sidingHours.toFixed(1) + 'h';
 
-    const trim = parseFloat(document.getElementById('est-extTrim').value) || 0;
-    const trimRate = parseFloat(document.getElementById('est-extTrimRate').value);
-    const trimHours = trim * trimRate;
-    totalHours += trimHours;
-    document.getElementById('est-extTrimHours').textContent = trimHours.toFixed(1) + 'h';
+    // Fascia - input is total linear ft, divide by 10 to get units
+    const fascia = parseFloat(document.getElementById('est-extFascia').value) || 0;
+    const fasciaRate = parseFloat(document.getElementById('est-extFasciaRate').value);
+    const fasciaHours = (fascia / 10) * fasciaRate;
+    totalHours += fasciaHours;
+    document.getElementById('est-extFasciaHours').textContent = fasciaHours.toFixed(1) + 'h';
+
+    // Soffit - input is total linear ft, divide by 10 to get units
+    // When combined with fascia, soffit adds 0 extra hours
+    const soffit = parseFloat(document.getElementById('est-extSoffit').value) || 0;
+    const soffitRate = parseFloat(document.getElementById('est-extSoffitRate').value);
+    const soffitHours = estSoffitCombined ? 0 : (soffit / 10) * soffitRate;
+    totalHours += soffitHours;
+    document.getElementById('est-extSoffitHours').textContent = estSoffitCombined ? '0h (combined)' : soffitHours.toFixed(1) + 'h';
+
+    // Window Trim - count * 1hr each
+    const windowTrim = parseFloat(document.getElementById('est-extWindowTrim').value) || 0;
+    const windowTrimHours = windowTrim * 1;
+    totalHours += windowTrimHours;
+    document.getElementById('est-extWindowTrimHours').textContent = windowTrimHours.toFixed(1) + 'h';
+
+    // Door Trim - count * 1.33hr each (80 min)
+    const doorTrim = parseFloat(document.getElementById('est-extDoorTrim').value) || 0;
+    const doorTrimHours = doorTrim * 1.33;
+    totalHours += doorTrimHours;
+    document.getElementById('est-extDoorTrimHours').textContent = doorTrimHours.toFixed(1) + 'h';
 
     const corner = parseFloat(document.getElementById('est-extCorner').value) || 0;
     const cornerHours = corner / 20;
@@ -1767,18 +1864,6 @@ function estCalculate() {
     const extDoorsHours = extDoors * 8;
     totalHours += extDoorsHours;
     document.getElementById('est-extDoorsHours').textContent = extDoorsHours.toFixed(1) + 'h';
-
-    const fascia = parseFloat(document.getElementById('est-extFascia').value) || 0;
-    const fasciaRate = parseFloat(document.getElementById('est-extFasciaRate').value);
-    const fasciaHours = fascia * fasciaRate;
-    totalHours += fasciaHours;
-    document.getElementById('est-extFasciaHours').textContent = fasciaHours.toFixed(1) + 'h';
-
-    const soffit = parseFloat(document.getElementById('est-extSoffit').value) || 0;
-    const soffitRate = parseFloat(document.getElementById('est-extSoffitRate').value);
-    const soffitHours = estSoffitCombined ? 0 : soffit * soffitRate;
-    totalHours += soffitHours;
-    document.getElementById('est-extSoffitHours').textContent = estSoffitCombined ? 'Combined' : soffitHours.toFixed(1) + 'h';
 
     const extPosts = parseFloat(document.getElementById('est-extPosts').value) || 0;
     const extPostsRate = parseFloat(document.getElementById('est-extPostsRate').value);
@@ -1817,9 +1902,10 @@ function estCalculate() {
     totalHours += stairsHours;
     document.getElementById('est-extStairsHours').textContent = stairsHours.toFixed(1) + 'h';
 
+    // Railings - input is total linear ft, divide by 10 to get units
     const railings = parseFloat(document.getElementById('est-extRailings').value) || 0;
     const railingsRate = parseFloat(document.getElementById('est-extRailingsRate').value);
-    const railingsHours = railings * railingsRate;
+    const railingsHours = (railings / 10) * railingsRate;
     totalHours += railingsHours;
     document.getElementById('est-extRailingsHours').textContent = railingsHours.toFixed(1) + 'h';
 
@@ -1858,10 +1944,16 @@ function estCalculate() {
     const adjustedHours = totalHours * (1 + adjustmentFactor);
 
     const laborDays = Math.ceil(adjustedHours / 8 * 2) / 2;
+    const totalValue = laborDays * 450;
+
+    // Material cost estimate
+    const materialCost = Math.round(totalValue * estMaterialPct);
 
     document.getElementById('est-totalHours').textContent = adjustedHours.toFixed(1);
     document.getElementById('est-laborDays').textContent = laborDays.toFixed(1);
-    document.getElementById('est-totalValue').textContent = '$' + (laborDays * 450).toLocaleString();
+    document.getElementById('est-totalValue').textContent = '$' + totalValue.toLocaleString();
+    document.getElementById('est-materialValue').textContent = '$' + materialCost.toLocaleString();
+    document.getElementById('est-summaryMaterials').textContent = '$' + materialCost.toLocaleString();
 }
 
 function estSaveEstimate() {
