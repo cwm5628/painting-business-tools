@@ -23,6 +23,18 @@ SPREADSHEET_ID = "1UQinb9lnBg-KpnZEjeqEQo1hSEkK2-cEGEIQS-dbmaI"
 TAB_INQUIRIES = "Customer Inquiries"
 TAB_ESTIMATES = "Detailed Estimates"
 TAB_PIPELINE = "Job Pipeline Master"
+TAB_JOBLIST = "Joblist"
+
+LABOR_RATE = 560
+
+# Joblist column order: A-U
+JOBLIST_HEADERS = [
+    "Job Address", "Interior/Exterior", "Status", "Priority",
+    "Labor Days", "Action Needed", "Notes", "Start Date",
+    "Completion Date", "Hood", "Customer Name", "Phone", "Email",
+    "Date Added", "Last Updated", "Estimate Complete", "Estimator",
+    "Estimated Value", "Days Since Est Sent", "Priority Sort", "Status Sort"
+]
 
 # ── App Setup ───────────────────────────────────────────────────────────────
 app = Flask(__name__)
@@ -75,6 +87,49 @@ PIPELINE_HEADERS = [
 ]
 
 
+# ── Joblist Writer ─────────────────────────────────────────────────────────
+def append_to_joblist(spreadsheet, **kwargs):
+    """Append a row to the Joblist tab. Matches the Job Tracker column order (A-U).
+    Pass keyword args for any fields you want to set; others default to empty.
+    """
+    ws = get_or_create_worksheet(spreadsheet, TAB_JOBLIST, JOBLIST_HEADERS)
+    today = datetime.now().strftime("%m/%d/%Y")
+
+    labor_days = kwargs.get("labor_days", "")
+    est_value = ""
+    if labor_days and str(labor_days).strip():
+        try:
+            est_value = float(labor_days) * LABOR_RATE
+        except (ValueError, TypeError):
+            pass
+
+    row = [
+        kwargs.get("address", ""),           # A: Job Address
+        kwargs.get("int_ext", ""),            # B: Interior/Exterior
+        kwargs.get("status", ""),             # C: Status
+        kwargs.get("priority", ""),           # D: Priority
+        labor_days,                           # E: Labor Days
+        kwargs.get("action", ""),             # F: Action Needed
+        kwargs.get("notes", ""),              # G: Notes
+        kwargs.get("start_date", ""),         # H: Start Date
+        kwargs.get("completion_date", ""),    # I: Completion Date
+        kwargs.get("hood", ""),               # J: Hood
+        kwargs.get("customer_name", ""),      # K: Customer Name
+        kwargs.get("phone", ""),              # L: Phone
+        kwargs.get("email", ""),              # M: Email
+        kwargs.get("date_added", today),      # N: Date Added
+        kwargs.get("last_updated", today),    # O: Last Updated
+        kwargs.get("est_complete", ""),       # P: Estimate Complete
+        kwargs.get("estimator", ""),          # Q: Estimator
+        est_value,                            # R: Estimated Value
+        "",                                   # S: Days Since Est Sent (formula)
+        "",                                   # T: Priority Sort (formula)
+        "",                                   # U: Status Sort (formula)
+    ]
+
+    ws.append_row(row, value_input_option="USER_ENTERED")
+
+
 # ── Index Route ─────────────────────────────────────────────────────────────
 @app.route("/")
 def index():
@@ -104,6 +159,19 @@ def save_inquiry():
         ]
 
         ws.append_row(row, value_input_option="USER_ENTERED")
+
+        # Also add to Joblist tab
+        append_to_joblist(
+            spreadsheet,
+            address=data.get("address", ""),
+            customer_name=data.get("customerName", ""),
+            phone=data.get("phone", ""),
+            email=data.get("email", ""),
+            status="Need Estimate",
+            hood=data.get("hood", ""),
+            notes=data.get("notes", ""),
+            int_ext=", ".join(data.get("jobTypes", [])),
+        )
 
         return jsonify({"success": True, "message": "Inquiry saved to Google Sheets"})
     except Exception as e:
@@ -149,6 +217,20 @@ def save_estimate():
         ]
 
         ws.append_row(row, value_input_option="USER_ENTERED")
+
+        # Also add to Joblist tab
+        append_to_joblist(
+            spreadsheet,
+            address=data.get("jobAddress", ""),
+            customer_name=data.get("customerName", ""),
+            status="Estimate Sent",
+            labor_days=data.get("laborDays", 0),
+            int_ext=data.get("jobType", ""),
+            start_date=data.get("startDate", ""),
+            notes=data.get("notes", ""),
+            estimator=data.get("estimator", ""),
+            est_complete="Yes",
+        )
 
         return jsonify({"success": True, "message": "Estimate saved to Google Sheets"})
     except Exception as e:
