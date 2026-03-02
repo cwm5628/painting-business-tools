@@ -18,6 +18,7 @@ SCOPES = [
 ]
 
 SPREADSHEET_ID = "1UQinb9lnBg-KpnZEjeqEQo1hSEkK2-cEGEIQS-dbmaI"
+JOBTRACKER_SPREADSHEET_ID = "1P_pjIfE-gTNZLc1nWYno5nsemAQoxIVfXejAuFtdVpI"
 
 # Tab names
 TAB_INQUIRIES = "Customer Inquiries"
@@ -88,11 +89,20 @@ PIPELINE_HEADERS = [
 
 
 # ── Joblist Writer ─────────────────────────────────────────────────────────
-def append_to_joblist(spreadsheet, **kwargs):
-    """Append a row to the Joblist tab. Matches the Job Tracker column order (A-U).
-    Pass keyword args for any fields you want to set; others default to empty.
+def append_to_joblist(**kwargs):
+    """Append a row to the Joblist tab on the Job Tracker spreadsheet.
+    Matches the Job Tracker column order (A-U).
     """
-    ws = get_or_create_worksheet(spreadsheet, TAB_JOBLIST, JOBLIST_HEADERS)
+    env_creds = os.environ.get("GOOGLE_CREDENTIALS")
+    if env_creds:
+        info = json.loads(env_creds)
+        creds = Credentials.from_service_account_info(info, scopes=SCOPES)
+    else:
+        creds_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "credentials.json")
+        creds = Credentials.from_service_account_file(creds_file, scopes=SCOPES)
+    client = gspread.authorize(creds)
+    jt_sheet = client.open_by_key(JOBTRACKER_SPREADSHEET_ID)
+    ws = get_or_create_worksheet(jt_sheet, TAB_JOBLIST, JOBLIST_HEADERS)
     today = datetime.now().strftime("%m/%d/%Y")
 
     labor_days = kwargs.get("labor_days", "")
@@ -160,9 +170,8 @@ def save_inquiry():
 
         ws.append_row(row, value_input_option="USER_ENTERED")
 
-        # Also add to Joblist tab
+        # Also add to Joblist tab (Job Tracker spreadsheet)
         append_to_joblist(
-            spreadsheet,
             address=data.get("address", ""),
             customer_name=data.get("customerName", ""),
             phone=data.get("phone", ""),
@@ -218,9 +227,8 @@ def save_estimate():
 
         ws.append_row(row, value_input_option="USER_ENTERED")
 
-        # Also add to Joblist tab
+        # Also add to Joblist tab (Job Tracker spreadsheet)
         append_to_joblist(
-            spreadsheet,
             address=data.get("jobAddress", ""),
             customer_name=data.get("customerName", ""),
             status="Estimate Sent",
