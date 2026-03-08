@@ -61,9 +61,16 @@ def get_or_create_worksheet(spreadsheet, tab_name, headers):
     """Get a worksheet by name, creating it with headers if it doesn't exist."""
     try:
         ws = spreadsheet.worksheet(tab_name)
-    except gspread.exceptions.WorksheetNotFound:
-        ws = spreadsheet.add_worksheet(title=tab_name, rows=1000, cols=len(headers))
-        ws.append_row(headers, value_input_option="USER_ENTERED")
+    except Exception:
+        try:
+            ws = spreadsheet.add_worksheet(title=tab_name, rows=1000, cols=len(headers))
+            ws.append_row(headers, value_input_option="USER_ENTERED")
+        except Exception:
+            # Tab exists but wasn't found by name — try fetching all worksheets
+            for sheet in spreadsheet.worksheets():
+                if sheet.title.strip().lower() == tab_name.strip().lower():
+                    return sheet
+            raise
     return ws
 
 
